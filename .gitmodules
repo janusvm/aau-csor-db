@@ -1,0 +1,3 @@
+[submodule "css/xaringan-css"]
+	path = css/xaringan-css
+	url = https://github.com/janusvm/xaringan-css.git
