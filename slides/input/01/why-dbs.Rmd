@@ -1,0 +1,98 @@
+name: why-dbs
+class: center, middle, snowstorm
+
+# Why databases?
+
+
+---
+class: center
+background-image: url(https://upload.wikimedia.org/wikipedia/commons/0/0c/ComputerMemoryHierarchy.svg)
+background-size: 70%
+
+---
+layout: true
+name: rectangular
+
+# Rectangular data
+
+---
+template: rectangular
+
+.left-column[
+### Data frames
+]
+
+.right-column[
+- Tables stored temporarily in memory
+- Fast access, limited size
+]
+
+???
+DF:
+- You're likely used to thinking about data like this
+- Data only "lives" within the R/Python/etc. session
+
+---
+template: rectangular
+
+.left-column[
+### Data frames
+
+### CSV files
+]
+
+.right-column[
+- Tables stored "permanently" in files on the hard drive
+- Unlimited size<sup>*</sup>, slower access
+- You still have to read it into memory to do stuff
+]
+
+.footnote[
+*) Depending on your hard drive volume and type `r emo::ji("smirk")`
+]
+
+???
+CSV:
+- Data persistent between sessions
+- Plain text files are not very efficient
+
+---
+template: rectangular
+
+.left-column[
+### Data frames
+
+### CSV files
+
+### Databases
+]
+
+.right-column[
+- A more organised approach to data collection
+- Data is "hidden away" on server (binary files somewhere on disk)
+- Client program needed to interact with it
+]
+
+---
+layout: false
+
+.pull-left[
+
+# Pros
+
+- Huge amounts of data
+- No data redundancy
+- Statically typed
+- Users can have different privileges
+
+]
+
+.pull-right[
+
+# Cons
+
+- May seem complicated at first
+- It's a bit harder to "just view" data (compared to plain text files)
+- A bit more effort to get data into R/Python/etc.
+
+]

@@ -1,0 +1,43 @@
+name: exercises
+
+# Exercises
+
+Do the following tutorials on [sqlzoo.net](https://sqlzoo.net/):
+
+- [0 SELECT basics](https://sqlzoo.net/wiki/SELECT_basics) ([+quiz](https://sqlzoo.net/wiki/SELECT_Quiz))
+- [1 SELECT names](https://sqlzoo.net/wiki/SELECT_names)
+- [2 SELECT FROM world](https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial) ([+quiz](https://sqlzoo.net/wiki/BBC_QUIZ))
+- [3 SELECT FROM nobel](https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nobel_Quiz))
+
+---
+class: polarnight
+
+# Cheat sheet
+
+```sql
+SELECT col1, col2, ... FROM table1  -- filter columns
+ WHERE col2 >= 0                    -- filter rows
+ ORDER BY col2, col1 DESC           -- order according to specific column(s)
+ LIMIT 10;                          -- only return a limited number of rows
+```
+
+.pull-left[
+
+- `SELECT DISTINCT`: only return unique results
+- `col BETWEEN a AND b`: limit values of `col` to the range `[a,b]`
+- `col LIKE pattern`: pattern match in text
+  + `_` any single character
+  + `%` any number of characters
+- `col IN (a, b, c)`: limit values of `col` to array of values
+
+]
+
+.pull-right[
+
+- `CONCAT(str1, str2)`: concatenate strings
+- `REPLACE(str, sub, new)`: replace `sub` with `new` in `str`
+- `ROUND(num, n)`: round `num` to `n` places
+- `LENGTH(str)`: length of string
+- `LEFT(str, n)`: first `n` characters of string
+
+]

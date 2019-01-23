@@ -1,0 +1,17 @@
+name: sql
+class: center, middle, snowstorm
+
+# SQL
+
+---
+
+# SQL
+
+- Short for **Structured Query Language**
+- A declarative programming language
+- Used to communicate with the server
+- Several implementations exist (we'll be using PostgreSQL)
+
+---
+
+# Syntax

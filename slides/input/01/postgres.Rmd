@@ -1,0 +1,30 @@
+name: postgres
+class: center, middle, snowstorm
+
+# PostgreSQL clients
+
+---
+
+# psql
+
+```console
+$ psql -h <hostname> -p <port> -U <user> -d <dbname>
+```
+
+By default, `hostname` is `localhost`, and `port` is 5432.
+
+Command | Effect
+--- | ---
+`\d` | List tables in database
+`\d table` | Describe table
+`\l` | List databases on server
+`\c dbname` | Connect to another database
+`\e` | Open editor (e.g. for long, multi-line queries)
+`\q` | Quit `psql`
+`\?` | List all commands
+
+Other than that, you can input SQL statements ― remember to end with `;`
+
+---
+
+# pgAdmin
