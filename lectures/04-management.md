@@ -1,7 +1,7 @@
 # Lecture 04: Management and performance
 
 Lecturer
-: Janus Valberg-Madsen <<janus@math.aau.dk>>
+: Janus Valberg-Madsen [`<janus@math.aau.dk>`](mailto:janus@math.aau.dk)
 
 Time
 : Apr 08, 08:15-12:00

@@ -1,7 +1,7 @@
 # Lecture 02: Aggregation and JOINs
 
 Lecturer
-: Janus Valberg-Madsen <<janus@math.aau.dk>>
+: Janus Valberg-Madsen [`<janus@math.aau.dk>`](mailto:janus@math.aau.dk)
 
 Time
 : Mar 25, 08:15-12:00

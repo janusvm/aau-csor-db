@@ -1,7 +1,7 @@
 # Lecture 03: Databases in R with tidyverse
 
 Lecturer
-: Janus Valberg-Madsen <<janus@math.aau.dk>>
+: Janus Valberg-Madsen [`<janus@math.aau.dk>`](mailto:janus@math.aau.dk)
 
 Time
 : Apr 01, 08:15-12:00
