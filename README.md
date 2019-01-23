@@ -1,37 +1,12 @@
-## Welcome to GitHub Pages
+## About this course
 
-You can use the [editor on GitHub](https://github.com/janusvm/aau-csor-db/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This minicourse in databases and SQL is part of [Computational Statistics and Operations Research](https://www.moodle.aau.dk/course/view.php?id=28948), a course held in the spring semester of 2019 at Aalborg University.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+## Contents
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/janusvm/aau-csor-db/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+- Lecture 01: [Introduction to databases](lectures/01-introduction)
+- Lecture 02: [Aggregation and JOINs](lectures/02-aggregation)
+- Lecture 03: [Databases in R](lectures/03-tidyverse)
+- Lecture 04: [Management and performance](lectures/04-management)
+- [Self study session](lectures/self-study)
