@@ -9,7 +9,6 @@ Time
 Place
 : Skjernvej 4A, room 2.120
 
----
 
 ## Contents of lecture
 
@@ -19,23 +18,18 @@ Place
 - Using Indices
 - Importing and exporting data
 
----
 
 ## Exercises
 
 - TBD
 
----
 
-## Literature
+## Literature and resources
 
 - [D&W] Chapter 4, section _Using Views_
 - [D&W] Chapter 7, section _Indices_
 - [Docs] Chapter 8, _Data Types_, sections 1, 3, and 6
 - [Docs] Chapter 11, _Indexes_, sections 1 and 3
 
----
-
-## Resources
 
 Slides are under construction, check back later...

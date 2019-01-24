@@ -9,7 +9,6 @@ Time
 Place
 : Skjernvej 4A, room 2.120
 
----
 
 ## Contents of lecture
 
@@ -17,23 +16,16 @@ Place
 - How to connect to a PostgreSQL DB in R
 - Reading from and writing to tables in the database
 
----
 
 ## Exercises
 
 - TBD
 
----
 
-## Literature
+## Literature and resources
 
-- _Data transformation with dplyr_ (attached)
-- _Data import_, page 2 (attached)
 - Note on DBI/dbplyr/RPostgreSQL (under construction)
+- [Data wrangling cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
 - [Introduction to dbplyr](https://dbplyr.tidyverse.org/articles/dbplyr.html)
-
----
-
-## Resources
 
 Slides are under construction, check back later...

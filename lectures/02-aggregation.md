@@ -9,7 +9,6 @@ Time
 Place
 : Skjernvej 4A, room 2.120
 
----
 
 ## Contents of lecture
 
@@ -17,7 +16,6 @@ Place
 - Aggregating/summarising data server-side
 - JOINs
 
----
 
 ## Exercises
 
@@ -26,14 +24,10 @@ Place
 - [JOIN](https://sqlzoo.net/wiki/The_JOIN_operation) ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz))
 - [Using NULL](https://sqlzoo.net/wiki/Using_Null) ([+quiz](https://sqlzoo.net/wiki/Using_Null_Quiz))
 
----
 
-## Literature
+## Literature and resources
 
 - [Docs] Chapter 9, _Functions and Operators_, section 20
 
----
-
-## Resources
 
 Slides are under construction, check back later...
