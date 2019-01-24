@@ -1,0 +1,8 @@
+# Locally built Jekyll site for previewing
+_site/
+.sass-cache/
+Gemfile
+Gemfile.lock
+
+# Emacs project file
+.projectile
