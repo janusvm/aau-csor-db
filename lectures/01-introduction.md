@@ -35,4 +35,4 @@ Today's exercise sessions will consist of the following:
 
 - [D&W] Chapter 3, _Understanding SQL_
 - [D&W] Chapter 4, section _Retrieving Rows with SELECT_
-- [Slides](/slides/01-introduction)
+- [Slides](../slides/01-introduction)

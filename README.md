@@ -34,7 +34,7 @@ Before the first lecture:
 1. Make sure your postgres server is running and that you can connect to it in pgAdmin
 1. Bring your laptop to the lectures
 
-For a quick guide to installing and setting up PostgreSQL Server and pgAdmin 4, see the _Installation guide_ under Resources.
+For a quick guide to installing and setting up PostgreSQL Server and pgAdmin 4, see the [installation and setup guide](resources/installation).
 
 If you have problems, please contact me at <janus@math.aau.dk>.
 
@@ -52,7 +52,7 @@ Available at <http://proquest.safaribooksonline.com/9781449309770>
 
 Other resources and notes:
 
-- [Installation guide](/)
+- [Installation guide](resources/installation)
 - [RMarkdown cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
 - [Data wrangling cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
 - [Introduction to dbplyr](https://dbplyr.tidyverse.org/articles/dbplyr.html)
