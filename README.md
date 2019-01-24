@@ -8,11 +8,11 @@ You should therefore bring a laptop to each lecture; see below for programs to i
 
 Click through below for detailed descriptions of and material for each session.
 
-- Lecture 01: [Introduction to databases](lectures/01-introduction)
-- Lecture 02: [Aggregation and JOINs](lectures/02-aggregation)
-- Lecture 03: [Databases in R](lectures/03-tidyverse)
-- Lecture 04: [Management and performance](lectures/04-management)
-- [Self study session](lectures/self-study)
+1. [Introduction to databases](lectures/01-introduction)
+1. [Aggregation and JOINs](lectures/02-aggregation)
+1. [Databases in R](lectures/03-tidyverse)
+1. [Management and performance](lectures/04-management)
+1. [Self study session](lectures/self-study)
 
 
 ## Evaluation
@@ -32,7 +32,6 @@ Before the first lecture:
     + [R](https://cran.r-project.org/) with packages: `tidyverse`, `RPostgreSQL`, and `nycflights13`
     + [RStudio](https://www.rstudio.com) (optional, but recommended)
 1. Make sure your postgres server is running and that you can connect to it in pgAdmin
-1. Bring your laptop to the lectures
 
 For a quick guide to installing and setting up PostgreSQL Server and pgAdmin 4, see the [installation and setup guide](resources/installation).
 
@@ -50,9 +49,4 @@ Available at <http://proquest.safaribooksonline.com/9781449309770>
 [Docs]
 : Official PostgreSQL documentation. <https://www.postgresql.org/docs/current/index.html>
 
-Other resources and notes:
-
-- [Installation guide](resources/installation)
-- [RMarkdown cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
-- [Data wrangling cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
-- [Introduction to dbplyr](https://dbplyr.tidyverse.org/articles/dbplyr.html)
+For extra notes, guides, and links, check out the [Resources](resources) page.

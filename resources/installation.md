@@ -94,7 +94,7 @@ Make sure you set the field _hostname/address_ to `localhost` and supply the pas
 
 If you get errors at this point, you might have to change some configurations to allow for certain kinds of connections to the PostgreSQL server that pgAdmin needs:
 
-- Open the file `/etc/postgresql/10/main/pg_hba.conf` (requires superuser)
+- Open the file `/etc/postgresql/XX/main/pg_hba.conf` (where `XX` is the version number, at the time of writing this was `10`; requires superuser)
 - Find the line describing local socket connections, it looks like this:
 ```
 local   all             all                                      peer
