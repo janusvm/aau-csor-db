@@ -1,5 +1,6 @@
 This minicourse in databases and SQL is part of [Computational Statistics and Operations Research](https://www.moodle.aau.dk/course/view.php?id=28948), a course held in the spring semester of 2019 at Aalborg University for 2nd semester Operations Research master students.
 
+The goal of the course is _not_ to be a comprehensive course in SQL, but rather to teach the student enough of the basics to enable them to use SQL databases as part of their data analysis pipeline, in particular via the programming language R.
 
 ## Contents
 
@@ -14,6 +15,7 @@ Click through below for detailed descriptions of and material for each session.
 1. [Management and performance](lectures/04-management)
 1. [Self study session](lectures/self-study)
 
+For more info on how to use the slides, check out the [slides overview page](slides).
 
 ## Evaluation
 
