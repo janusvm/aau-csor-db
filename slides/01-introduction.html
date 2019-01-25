@@ -22,6 +22,7 @@ class: center, middle, inverse, title-slide
 
 
 
+
 # Course structure
 
 1. Introduction to databases and SQL
@@ -31,10 +32,22 @@ class: center, middle, inverse, title-slide
 1. Self study session
 
 ???
-This course consists
+## Goal of the course
 
-- First part of the lectures will be a general intro to SQL
-- Second part will be about the practical aspects
+- **is not**: to cover _all_ the details of the SQL standard or the Postgres implementation
+- **is:** to teach you enough of the basics that you can use it as part of data analysis tasks
+
+
+## Structure &amp; exam
+
+- 5 sessions in total: 4 lectures and 1 self study session
+
+    + lecture 1 &amp; 2: general intro to SQL
+    + lecture 3 &amp; 4: practical aspects
+    + self study: hand-in exercise, which must be completed to pass;
+
+        this exercise will contain questions in topics from all four lectures, so make sure to show up!
+
 
 ---
 
@@ -43,7 +56,13 @@ This course consists
 - What are databases and why/when do they make sense to use?
 - Basic SQL syntax
 - Using `psql` and `pgAdmin`
-- Exercises
+
+???
+For today,
+
+- we start with a brief introduction to databases in general, talking about pros and cons
+- then we dive into the basic standard SQL syntax, with some examples and class exercises
+- finally we take a look at using Postgres specifically, and set up a test database that we'll be using throughout the lectures
 
 ---
 layout: false
@@ -53,17 +72,57 @@ class: center, middle, snowstorm
 
 # Why databases?
 
+???
+So _when_ and _why_ might you use databases?
 
 ---
 class: center
 background-image: url(https://upload.wikimedia.org/wikipedia/commons/0/0c/ComputerMemoryHierarchy.svg)
 background-size: 70%
 
+???
+It might be helpful to first establish an overview of different options for data storage:
+
+- Volatile; does not retain content when powered off
+
+    + Processor registers: small amount of "instant" access storage in the CPU; up to a few thousand bytes in size
+    + Cache: different levels of fast storage, from ~KBs in size and ~700GB/s access to ~MBs in size and ~40GB/s access
+    + RAM: GBs in size, access around ~10GB/s
+
+- Non-volative; retains content when powered off
+
+    + Flash memory: GBs in size, ~640MB/s; short term storage, used for transfer
+    + Disk storage: TBs in size, up to ~2GB/s (with SSDs); mid term storage, rule of thumb is that hard drives last about 5 years
+    + Magnetic tape: EBs (exabytes) of size, best speed ~160MB/s; long term storage, can last decades
+
+SQL databases fall under the "disk storage/hard drives" category.
+
 ---
 layout: true
 name: rectangular
 
 # Rectangular data
+
+???
+You are likely used to data being _rectangular_, i.e. suitable for storing in a 2-dimensional table, each column corresponding to a different _variable_, and each row corresponding to an _observation_ of those variables together.
+
+## Data frames
+
+- This is exactly what a data frame in e.g. R is like
+- Data frames only "live" within the R/Python/Julia/etc. session
+
+## CSV files
+
+- Data persistent between sessions
+- Plain text files are not very efficient
+- Entire file needs to be parsed (e.g. via `read_csv`)
+
+## Databases
+
+- In a database, you have a much higher level of control
+- Data is not plainly available, but "lives" on a server
+- The server can filter and aggregate by sending instructions via a client program
+
 
 ---
 template: rectangular
@@ -76,11 +135,6 @@ template: rectangular
 - Tables stored temporarily in memory
 - Fast access, limited size
 ]
-
-???
-DF:
-- You're likely used to thinking about data like this
-- Data only "lives" within the R/Python/etc. session
 
 ---
 template: rectangular
@@ -100,11 +154,6 @@ template: rectangular
 .footnote[
 *) Depending on your hard drive volume and type 😏
 ]
-
-???
-CSV:
-- Data persistent between sessions
-- Plain text files are not very efficient
 
 ---
 template: rectangular
@@ -134,6 +183,7 @@ layout: false
 - No data redundancy
 - Statically typed
 - Users can have different privileges
+- Preprocess data before loading it into R
 
 ]
 
@@ -143,9 +193,25 @@ layout: false
 
 - May seem complicated at first
 - It's a bit harder to "just view" data (compared to plain text files)
-- A bit more effort to get data into R/Python/etc.
+- A bit more effort to get data into R
 
 ]
+
+???
+## Pros
+
+- Since data is stored on disk, we can have TBs of data
+- Databases are optimised to store data efficiently (contrast with CSV files, where all values are ASCII sequences of 1 byte per character)
+- The type of a value is determined by its column; each column has a type, and it can only contain values of that type (contrast with CSV again)
+- As the database administrator, you can create mutliple "roles" (users) with different privileges, e.g. read/write/create database/etc.
+- Execute queries on the data on the server and pull the results into memory locally
+
+
+## Cons
+
+- More of a learning curve than simple CSV files
+- With CSV files, you can open the file on disk with any text editor and look at the data; with SQL you have to query the database with a client
+- As we'll see later, it takes more than just a simple one-liner to load data into R (but not _much_ more)
 
 ---
 layout: false
@@ -155,18 +221,114 @@ class: center, middle, snowstorm
 
 # SQL
 
+???
+So, in order to read or write to a database, we need to tell the server what we want.
+This is what SQL is for.
+
 ---
 
 # SQL
 
 - Short for **Structured Query Language**
-- A declarative programming language
+- A declarative, domain-specific language
 - Used to communicate with the server
 - Several implementations exist (we'll be using PostgreSQL)
 
+???
+- SQL was developed by IBM in the 1970's, initially called SEQUEL (Structured English Query Language), but the name later changed because "SEQUEL" was a trademark of another company
+- Declarative, domain-specific:
+
+    + Declarative: you write _what_ you want, rather than _how_ the program should do it (imperative)
+    + Domain-specific: it's not a general programming language, but rather it deals with the domain of relational databases
+
+- You type queries in this language into a client program, that executes them on the server
+- Other examples include: MySQL, MS SQL Server, SQLite, and Oracle; the choice of PostgreSQL is based on it being cross platform, open source, and standard compliant
+
 ---
 
-# Syntax
+# Basic syntax: selection
+
+???
+Most commonly, you'll be querying the database to _read_ data from a table;
+this is done with a `SELECT` statement.
+
+--
+
+```sql
+SELECT col1, col2, ... FROM table1;
+```
+
+"**SELECT** all rows of columns `col1`, `col2`, etc. **FROM** the table named `table1`"
+
+???
+The syntax reads much like plain English;
+you say which columns you want to `SELECT` (retrieve) and `FROM` which table.
+
+--
+
+```sql
+SELECT * FROM table1;
+```
+
+"**SELECT** all rows of all columns **FROM** the table `table1`"
+
+???
+The `*` in the column list is shorthand for all columns.
+
+---
+layout: true
+# Basic syntax: filtering
+
+---
+
+???
+Oftentimes, you don't want _all_ the rows in a table, but only a subset.
+This is called _filtering_.
+
+--
+
+```sql
+SELECT * FROM table1
+ WHERE &lt;condition&gt;;
+```
+
+"**SELECT** the rows **FROM** `table1` **WHERE** `condition` is true"
+
+???
+The `WHERE` keyword is used to filter rows conditionally.
+Here, `condition` is any statement that evaluates to a boolean value (`true/false`)
+
+--
+
+```sql
+SELECT DISTINCT * FROM table1;
+```
+
+"**SELECT** **DISTINCT** (unique) rows **FROM** `table1`"
+
+???
+The `DISTINCT` keyword signifies that you don't want duplicate rows; only unique combinations of the values in the selected columns are retrieved.
+
+---
+
+### Boolean expressions
+
+Common functions in such `condition`s:
+
+.pull-left[
+- Equality (NB: not assignment): `col = val`
+- Inequality: `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
+- Double inequality: `col BETWEEN a AND b`
+- Set membership: `col IN (a, b, ...)`
+]
+
+.pull-right[
+- String mathching: `col LIKE pattern`
+
+  → Wildcards: `_` for single char, `%` for many
+
+- Logical operators: `AND`, `OR`, `NOT`
+]
 
 ---
 layout: false

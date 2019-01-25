@@ -1,0 +1,40 @@
+# Course structure
+
+1. Introduction to databases and SQL
+1. Aggregation, JOINs, and subqueries
+1. Using a PostgreSQL database from R
+1. Database management and performance
+1. Self study session
+
+???
+## Goal of the course
+
+- **is not**: to cover _all_ the details of the SQL standard or the Postgres implementation
+- **is:** to teach you enough of the basics that you can use it as part of data analysis tasks
+
+
+## Structure & exam
+
+- 5 sessions in total: 4 lectures and 1 self study session
+
+    + lecture 1 & 2: general intro to SQL
+    + lecture 3 & 4: practical aspects
+    + self study: hand-in exercise, which must be completed to pass;
+
+        this exercise will contain questions in topics from all four lectures, so make sure to show up!
+
+
+---
+
+# Today's topics
+
+- What are databases and why/when do they make sense to use?
+- Basic SQL syntax
+- Using `psql` and `pgAdmin`
+
+???
+For today,
+
+- we start with a brief introduction to databases in general, talking about pros and cons
+- then we dive into the basic standard SQL syntax, with some examples and class exercises
+- finally we take a look at using Postgres specifically, and set up a test database that we'll be using throughout the lectures

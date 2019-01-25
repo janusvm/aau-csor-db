@@ -3,17 +3,57 @@ class: center, middle, snowstorm
 
 # Why databases?
 
+???
+So _when_ and _why_ might you use databases?
 
 ---
 class: center
 background-image: url(https://upload.wikimedia.org/wikipedia/commons/0/0c/ComputerMemoryHierarchy.svg)
 background-size: 70%
 
+???
+It might be helpful to first establish an overview of different options for data storage:
+
+- Volatile; does not retain content when powered off
+
+    + Processor registers: small amount of "instant" access storage in the CPU; up to a few thousand bytes in size
+    + Cache: different levels of fast storage, from ~KBs in size and ~700GB/s access to ~MBs in size and ~40GB/s access
+    + RAM: GBs in size, access around ~10GB/s
+
+- Non-volative; retains content when powered off
+
+    + Flash memory: GBs in size, ~640MB/s; short term storage, used for transfer
+    + Disk storage: TBs in size, up to ~2GB/s (with SSDs); mid term storage, rule of thumb is that hard drives last about 5 years
+    + Magnetic tape: EBs (exabytes) of size, best speed ~160MB/s; long term storage, can last decades
+
+SQL databases fall under the "disk storage/hard drives" category.
+
 ---
 layout: true
 name: rectangular
 
 # Rectangular data
+
+???
+You are likely used to data being _rectangular_, i.e. suitable for storing in a 2-dimensional table, each column corresponding to a different _variable_, and each row corresponding to an _observation_ of those variables together.
+
+## Data frames
+
+- This is exactly what a data frame in e.g. R is like
+- Data frames only "live" within the R/Python/Julia/etc. session
+
+## CSV files
+
+- Data persistent between sessions
+- Plain text files are not very efficient
+- Entire file needs to be parsed (e.g. via `read_csv`)
+
+## Databases
+
+- In a database, you have a much higher level of control
+- Data is not plainly available, but "lives" on a server
+- The server can filter and aggregate by sending instructions via a client program
+
 
 ---
 template: rectangular
@@ -26,11 +66,6 @@ template: rectangular
 - Tables stored temporarily in memory
 - Fast access, limited size
 ]
-
-???
-DF:
-- You're likely used to thinking about data like this
-- Data only "lives" within the R/Python/etc. session
 
 ---
 template: rectangular
@@ -50,11 +85,6 @@ template: rectangular
 .footnote[
 *) Depending on your hard drive volume and type `r emo::ji("smirk")`
 ]
-
-???
-CSV:
-- Data persistent between sessions
-- Plain text files are not very efficient
 
 ---
 template: rectangular
@@ -84,6 +114,7 @@ layout: false
 - No data redundancy
 - Statically typed
 - Users can have different privileges
+- Preprocess data before loading it into R
 
 ]
 
@@ -93,6 +124,22 @@ layout: false
 
 - May seem complicated at first
 - It's a bit harder to "just view" data (compared to plain text files)
-- A bit more effort to get data into R/Python/etc.
+- A bit more effort to get data into R
 
 ]
+
+???
+## Pros
+
+- Since data is stored on disk, we can have TBs of data
+- Databases are optimised to store data efficiently (contrast with CSV files, where all values are ASCII sequences of 1 byte per character)
+- The type of a value is determined by its column; each column has a type, and it can only contain values of that type (contrast with CSV again)
+- As the database administrator, you can create mutliple "roles" (users) with different privileges, e.g. read/write/create database/etc.
+- Execute queries on the data on the server and pull the results into memory locally
+
+
+## Cons
+
+- More of a learning curve than simple CSV files
+- With CSV files, you can open the file on disk with any text editor and look at the data; with SQL you have to query the database with a client
+- As we'll see later, it takes more than just a simple one-liner to load data into R (but not _much_ more)

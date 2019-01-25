@@ -23,28 +23,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Course structure
-
-1. Introduction to databases and SQL
-1. Aggregation, JOINs, and subqueries
-1. Using a PostgreSQL database from R
-1. Database management and performance
-1. Self study session
-
-???
-This course consists
-
-- First part of the lectures will be a general intro to SQL
-- Second part will be about the practical aspects
-
----
-
-# Today's topics
-
-- What are databases and why/when do they make sense to use?
-- Basic SQL syntax
-- Using `psql` and `pgAdmin`
-- Exercises
+```{r intro, child = "input/01/intro.Rmd"}
+```
 
 ---
 layout: false
