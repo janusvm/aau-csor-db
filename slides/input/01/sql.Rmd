@@ -99,7 +99,7 @@ Common functions in such `condition`s:
 
 .pull-left[
 - Equality (NB: not assignment): `col = val`
-- Inequality: `>`, `<`, `>=`, `<=`
+- Inequality: `>`, `<`, `>=`, `<=`, `<>`/`!=`
 - Double inequality: `col BETWEEN a AND b`
 - Set membership: `col IN (a, b, ...)`
 ]
@@ -109,5 +109,5 @@ Common functions in such `condition`s:
 
   → Wildcards: `_` for single char, `%` for many
 
-- Logical operators: `AND`, `OR`, `NOT`
+- Logical operators: `AND`, `OR`, `XOR`, `NOT`
 ]
