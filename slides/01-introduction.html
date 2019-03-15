@@ -200,7 +200,7 @@ layout: false
 ???
 ## Pros
 
-- Since data is stored on disk, we can have TBs of data
+- Since data is stored on disk, we can have TBs of data, spread across many tables
 - Databases are optimised to store data efficiently (contrast with CSV files, where all values are ASCII sequences of 1 byte per character)
 - The type of a value is determined by its column; each column has a type, and it can only contain values of that type (contrast with CSV again)
 - As the database administrator, you can create mutliple "roles" (users) with different privileges, e.g. read/write/create database/etc.
@@ -212,6 +212,27 @@ layout: false
 - More of a learning curve than simple CSV files
 - With CSV files, you can open the file on disk with any text editor and look at the data; with SQL you have to query the database with a client
 - As we'll see later, it takes more than just a simple one-liner to load data into R (but not _much_ more)
+
+---
+
+# Terminology
+
+![](https://upload.wikimedia.org/wikipedia/commons/7/7c/Relational_database_terms.svg)
+
+???
+SQL is based on the _relational data model_, coined by computer scientist Edgar F. Codd in 1969.
+
+This model is described using so-called _relational algebra_ with certain set operations, but we will not be diving into that area.
+
+The terms used in the theory and their practical/SQL counterparts are:
+
+RM | SQL
+--- | ---
+Relation | Table
+Attribute | Column
+Tuple | Row
+
+A **relation** (table) is a set of **tuples** (rows), where each element belongs to an **attribute** domain (column/type).
 
 ---
 layout: false
@@ -309,7 +330,16 @@ SELECT DISTINCT * FROM table1;
 ???
 The `DISTINCT` keyword signifies that you don't want duplicate rows; only unique combinations of the values in the selected columns are retrieved.
 
----
+--
+
+```sql
+SELECT * FROM table1 LIMIT &lt;number&gt;;
+```
+
+"**SELECT** the rows **FROM** `table1` and **LIMIT** the output to only `number` of them"
+
+???
+The `LIMIT` keyword tells the database to return only up to a fixed number of rows - good for previewing tables
 
 ### Boolean expressions
 
@@ -344,6 +374,8 @@ Do the following tutorials on [sqlzoo.net](https://sqlzoo.net/):
 - [1 SELECT names](https://sqlzoo.net/wiki/SELECT_names)
 - [2 SELECT FROM world](https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial) ([+quiz](https://sqlzoo.net/wiki/BBC_QUIZ))
 - [3 SELECT FROM nobel](https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nobel_Quiz))
+
+(these slides can be accessed on: &lt;https://janusvm.github.io/aau-csor-db&gt;)
 
 ---
 class: polarnight
@@ -483,6 +515,18 @@ Try using `SELECT` and `WHERE` to retrieve different subsets, e.g.:
 - the rows from `flight`, where `dep_delay` is 0
 - the airlines whose `name` includes "Airlines"
 - the `tailnum`s of all planes manufactured by "EMBRAER"
+
+---
+layout: false
+
+class: polarnight
+
+# Links and help
+
+- Course home page: &lt;https://janusvm.github.com/aau-csor-db&gt;
+- These slides: &lt;https://janusvm.github.com/aau-csor-db/slides/01-introduction&gt;
+- PostgreSQL documentation: &lt;https://www.postgresql.org/docs/current/index.html&gt;
+- SELECT reference: &lt;https://sqlzoo.net/wiki/SELECT_Reference&gt;
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({

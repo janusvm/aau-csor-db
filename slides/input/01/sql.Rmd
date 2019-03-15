@@ -91,7 +91,16 @@ SELECT DISTINCT * FROM table1;
 ???
 The `DISTINCT` keyword signifies that you don't want duplicate rows; only unique combinations of the values in the selected columns are retrieved.
 
----
+--
+
+```sql
+SELECT * FROM table1 LIMIT <number>;
+```
+
+"**SELECT** the rows **FROM** `table1` and **LIMIT** the output to only `number` of them"
+
+???
+The `LIMIT` keyword tells the database to return only up to a fixed number of rows - good for previewing tables
 
 ### Boolean expressions
 

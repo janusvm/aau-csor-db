@@ -131,7 +131,7 @@ layout: false
 ???
 ## Pros
 
-- Since data is stored on disk, we can have TBs of data
+- Since data is stored on disk, we can have TBs of data, spread across many tables
 - Databases are optimised to store data efficiently (contrast with CSV files, where all values are ASCII sequences of 1 byte per character)
 - The type of a value is determined by its column; each column has a type, and it can only contain values of that type (contrast with CSV again)
 - As the database administrator, you can create mutliple "roles" (users) with different privileges, e.g. read/write/create database/etc.
@@ -143,3 +143,24 @@ layout: false
 - More of a learning curve than simple CSV files
 - With CSV files, you can open the file on disk with any text editor and look at the data; with SQL you have to query the database with a client
 - As we'll see later, it takes more than just a simple one-liner to load data into R (but not _much_ more)
+
+---
+
+# Terminology
+
+![](https://upload.wikimedia.org/wikipedia/commons/7/7c/Relational_database_terms.svg)
+
+???
+SQL is based on the _relational data model_, coined by computer scientist Edgar F. Codd in 1969.
+
+This model is described using so-called _relational algebra_ with certain set operations, but we will not be diving into that area.
+
+The terms used in the theory and their practical/SQL counterparts are:
+
+RM | SQL
+--- | ---
+Relation | Table
+Attribute | Column
+Tuple | Row
+
+A **relation** (table) is a set of **tuples** (rows), where each element belongs to an **attribute** domain (column/type).

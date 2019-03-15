@@ -9,6 +9,8 @@ Do the following tutorials on [sqlzoo.net](https://sqlzoo.net/):
 - [2 SELECT FROM world](https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial) ([+quiz](https://sqlzoo.net/wiki/BBC_QUIZ))
 - [3 SELECT FROM nobel](https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nobel_Quiz))
 
+(these slides can be accessed on: <https://janusvm.github.io/aau-csor-db>)
+
 ---
 class: polarnight
 

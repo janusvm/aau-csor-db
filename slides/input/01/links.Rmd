@@ -1,0 +1,8 @@
+class: polarnight
+
+# Links and help
+
+- Course home page: <https://janusvm.github.com/aau-csor-db>
+- These slides: <https://janusvm.github.com/aau-csor-db/slides/01-introduction>
+- PostgreSQL documentation: <https://www.postgresql.org/docs/current/index.html>
+- SELECT reference: <https://sqlzoo.net/wiki/SELECT_Reference>
