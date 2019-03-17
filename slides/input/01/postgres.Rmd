@@ -54,13 +54,14 @@ This is what we'll be primarily using to interact with our local database.
 
 ## Set up example database
 
-Create new user for this course:
-
 - Select `localhost` server in Browser
 - Object → Create → Login/Group role
   - Name: `csor`
   - Password: `csor`
   - Privileges: default + can login, can create databases
+- Object → Create → Database
+  - Name: `nycflights13`
+  - Owner: `csor`
 
 Run this code in an R session:
 
@@ -70,8 +71,6 @@ dbplyr::nycflights13_postgres(dbname = "nycflights13",
                               user = "csor",
                               password = "csor")
 ```
-
-Check that the `nycflights13` database is now visible in pgAdmin.
 
 ???
 
