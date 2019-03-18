@@ -102,6 +102,8 @@ SELECT * FROM table1 LIMIT <number>;
 ???
 The `LIMIT` keyword tells the database to return only up to a fixed number of rows - good for previewing tables
 
+---
+
 ### Boolean expressions
 
 Common functions in such `condition`s:
@@ -120,3 +122,6 @@ Common functions in such `condition`s:
 
 - Logical operators: `AND`, `OR`, `XOR`, `NOT`
 ]
+
+???
+These functions can be used to describe boolean `condition`s
