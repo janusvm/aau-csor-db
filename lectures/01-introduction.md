@@ -33,6 +33,6 @@ Today's exercise sessions will consist of the following:
 
 ## Literature and resources
 
+- [Slides](../slides/01-introduction)
 - [D&W] Chapter 3, _Understanding SQL_
 - [D&W] Chapter 4, section _Retrieving Rows with SELECT_
-- [Slides](../slides/01-introduction)

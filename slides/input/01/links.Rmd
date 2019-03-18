@@ -1,6 +1,6 @@
 class: polarnight
 
-# Links and help
+# Links `r emo::ji("link")`
 
 - Course home page: <https://janusvm.github.com/aau-csor-db>
 - These slides: <https://janusvm.github.com/aau-csor-db/slides/01-introduction>

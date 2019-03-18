@@ -487,9 +487,9 @@ This is what we'll be primarily using to interact with our local database.
 Run this code in an R session:
 
 ```r
-dbplyr::nycflights13_postgres(dbname = "nycflights13",
-                              host = "localhost",
-                              user = "csor",
+dbplyr::nycflights13_postgres(dbname   = "nycflights13",
+                              host     = "localhost",
+                              user     = "csor",
                               password = "csor")
 ```
 
@@ -516,7 +516,7 @@ To get some example data into your `postgres` server, do these steps to add a da
 
 Try using `SELECT` and `WHERE` to retrieve different subsets, e.g.:
 
-- the rows from `flight`, where `dep_delay` is 0
+- the rows from `flights`, where `dep_delay` is 0
 - the airlines whose `name` includes "Airlines"
 - the `tailnum`s of all planes manufactured by "EMBRAER"
 
@@ -525,7 +525,7 @@ layout: false
 
 class: polarnight
 
-# Links and help
+# Links 🔗
 
 - Course home page: &lt;https://janusvm.github.com/aau-csor-db&gt;
 - These slides: &lt;https://janusvm.github.com/aau-csor-db/slides/01-introduction&gt;
