@@ -1,0 +1,19 @@
+class: snowstorm, middle, center
+
+# Summarising data
+
+???
+
+To summarise data means to calculate aggregate results from many rows into few or a single row.
+
+---
+
+## Summary functions
+
+.pull-left[
+- `COUNT(*)`: the number of rows
+- `AVG(col)`: the average of the values in `col`
+- `SUM(col)`: the sum of the values in `col`
+- `MAX(col)`: the maximum value in `col`
+- `MIN(col)`: the minimum value in `col`
+]

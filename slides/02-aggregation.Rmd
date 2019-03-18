@@ -1,0 +1,32 @@
+---
+title: "Aggregation and JOINs"
+subtitle: "Computational Statistics<br>& Operations Research"
+author: "<a href='htps://janusvm.github.io'>Janus Valberg-Madsen</a>"
+date: "2019-03-25 @ Aalborg University"
+output:
+  xaringan::moon_reader:
+    css: [default, "../assets/css/xaringan-css/janusvm.css", "../assets/css/xaringan-css/janusvm-fonts.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: none
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:10"
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.align = "center",
+  fig.path = "input/figs/"
+)
+```
+
+```{r intro, child = "input/02/intro.Rmd"}
+```
+
+---
+layout: false
+```{r summaries, child = "input/02/summaries.Rmd"}
+```

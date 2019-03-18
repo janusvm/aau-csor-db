@@ -27,7 +27,5 @@ Place
 
 ## Literature and resources
 
+- [Slides](../slides/02-aggregation)
 - [Docs] Chapter 9, _Functions and Operators_, section 20
-
-
-Slides are under construction, check back later...

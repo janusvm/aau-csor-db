@@ -15,10 +15,12 @@ endef
 
 $(foreach T,$(SLIDES_HTML),$(eval $(SLIDE_RULE)))
 
+slides: $(SLIDES_HTML)
+
 $(SLIDES_HTML): %.html: %.Rmd
 	Rscript -e "rmarkdown::render('$<', 'xaringan::moon_reader')"
 
 clean:
 	rm -f $(SLIDES_HTML)
 
-.PHONY: clean
+.PHONY: clean slides

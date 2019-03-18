@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Aggregation and JOINs</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Janus Valberg-Madsen" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm.css" type="text/css" />
+    <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm-fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Aggregation and JOINs
+## Computational Statistics<br>&amp; Operations Research
+### <a href='htps://janusvm.github.io'>Janus Valberg-Madsen</a>
+### 2019-03-25 @ Aalborg University
+
+---
+
+
+
+
+
+# Today's topics
+
+- Summarising data
+- How to construct and use _subqueries_
+- Using data from multiple tables with `JOIN`
+- Missing data (`NULL`s)
+
+???
+
+Today we will dive into SQL queries involving data from multiple sources and how to get just the information you need from the database.
+
+- We'll look at how to produce different kinds of summaries, both on whole tables and on a by-group basis
+- More complex queries involving selecting from tables multiple times
+- Joining tables together to match related tuples from different sources
+- Dealing with missing values
+
+---
+layout: false
+
+class: snowstorm, middle, center
+
+# Summarising data
+
+???
+
+To summarise data means to calculate aggregate results from many rows into few or a single row.
+
+---
+
+## Summary functions
+
+.pull-left[
+- `COUNT(*)`: the number of rows
+- `AVG(col)`: the average of the values in `col`
+- `SUM(col)`: the sum of the values in `col`
+- `MAX(col)`: the maximum value in `col`
+- `MIN(col)`: the minimum value in `col`
+]
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "none",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:10"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+# Today's topics
+
+- Summarising data
+- How to construct and use _subqueries_
+- Using data from multiple tables with `JOIN`
+- Missing data (`NULL`s)
+
+???
+
+Today we will dive into SQL queries involving data from multiple sources and how to get just the information you need from the database.
+
+- We'll look at how to produce different kinds of summaries, both on whole tables and on a by-group basis
+- More complex queries involving selecting from tables multiple times
+- Joining tables together to match related tuples from different sources
+- Dealing with missing values
