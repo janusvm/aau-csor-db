@@ -25,10 +25,10 @@ Solutions for each tutorial will be made available after the lecture.
 
 Today's exercise sessions will consist of the following:
 
-- [SELECT basics](https://sqlzoo.net/wiki/SELECT_basics) ([+quiz](https://sqlzoo.net/wiki/SELECT_Quiz))
-- [SELECT names](https://sqlzoo.net/wiki/SELECT_names)
-- [SELECT FROM world](https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial) ([+quiz](https://sqlzoo.net/wiki/BBC_QUIZ))
-- [SELECT FROM nobel](https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nobel_Quiz))
+- [SELECT basics](https://sqlzoo.net/wiki/SELECT_basics) [[solutions]({{ site.url }}/exercises/sqlzoo/0-select-basics.sql)] ([+quiz](https://sqlzoo.net/wiki/SELECT_Quiz))
+- [SELECT names](https://sqlzoo.net/wiki/SELECT_names) [[solutions]({{ site.url }}/exercises/sqlzoo/1-select-name.sql)]
+- [SELECT FROM world](https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial) [[solutions]({{ site.url }}/exercises/sqlzoo/2-select-from-world.sql)] ([+quiz](https://sqlzoo.net/wiki/BBC_QUIZ))
+- [SELECT FROM nobel](https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial) [[solutions]({{ site.url }}/exercises/sqlzoo/3-select-from-nobel.sql)] ([+quiz](https://sqlzoo.net/wiki/Nobel_Quiz))
 
 
 ## Literature and resources
