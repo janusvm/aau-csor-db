@@ -1,0 +1,14 @@
+name: links
+class: polarnight
+
+# Links `r emo::ji("link")`
+
+- Course home page: <https://janusvm.github.com/aau-csor-db>
+- These slides: <https://janusvm.github.com/aau-csor-db/slides/02-aggregation>
+- Relevant pages from the PostgreSQL docs:
+  - Aggregate functions: <https://www.postgresql.org/docs/current/functions-aggregate.html>
+  - Table expressions: <https://www.postgresql.org/docs/current/queries-table-expressions.html>
+  - `WITH` queries: <https://www.postgresql.org/docs/current/queries-with.html>
+- Functions reference (SQLzoo): <https://sqlzoo.net/wiki/Functions_Reference>
+- R For Data Science: <https://r4ds.had.co.nz>
+  - Section _Relational data_: <https://r4ds.had.co.nz/relational-data.html>

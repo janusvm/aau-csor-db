@@ -1,0 +1,162 @@
+name: subqueries
+class: snowstorm, middle, center
+
+# Subqueries
+
+queries nested inside another query, enclosed in parentheses
+
+???
+A subquery is also called an _inner query_ or _inner select_.
+
+Such an expression can be in many different cases:
+
+- after a `FROM` clause in place of a table
+- after a binary operator, if the subquery returns only one value
+- after an array comparison function, if the subquery returns only one column
+
+The last case is one you'll see often, so let's explore that a bit
+
+---
+layout: true
+
+## Subquery expressions
+
+---
+.left-column[
+### EXISTS
+]
+
+.right-column[
+
+```sql
+SELECT * FROM flights
+ WHERE EXISTS (SELECT 1 FROM planes
+                WHERE tailnum = flights.tailnum);
+```
+
+Selects the flights where the plane's tail number is recorded in the `planes` table.
+
+```sql
+SELECT * FROM flights
+ WHERE NOT EXISTS (SELECT 1 FROM planes
+                    WHERE tailnum = flights.tailnum);
+```
+
+Selects the flights that do _not_ have a corresponding entry in the `planes` table
+]
+
+???
+An `EXISTS` expression can be used to make semi and anti joins, as demonstrated on the previous slide.
+
+Here is an example using the `nycflights13` data.
+
+---
+name: subquery-in
+
+.left-column[
+### EXISTS
+### IN
+]
+
+.right-column[
+
+```sql
+SELECT * FROM flights
+ WHERE tailnum IN (SELECT tailnum FROM planes
+                    WHERE manufacturer = 'EMBRAER');
+```
+
+All the flights flown by a plane manufactured by EMBRAER
+
+```sql
+SELECT * FROM flights
+ WHERE tailnum NOT IN (SELECT tailnum FROM planes
+                        WHERE seats < 50);
+```
+
+All the flights flown by larger planes (i.e. 50 or more seats)
+
+]
+
+???
+An `IN` expression can for example be used to make a filtering join, where you condition on additionally filtered data from another table.
+
+There is actually a subtle error on the slide; can you identify it?
+
+`r emo::ji("right_arrow")` the last sentence; in addition to all flights flown by larger planes, the second query will also return the ~50,000 flights flown by planes that don't have a corresponding entry in the `planes` table
+
+---
+
+.left-column[
+### EXISTS
+### IN
+### ANY/SOME
+]
+
+.right-column[
+
+```sql
+SELECT * FROM airports
+ WHERE alt >= ANY (SELECT MAX(alt) FROM airports
+                    GROUP BY tzone);
+```
+
+The airports that have an altitude higher or equal to the maximum altitude of any time zone.
+
+The keyword `SOME` is an alias for `ANY`.
+
+]
+
+---
+
+.left-column[
+### EXISTS
+### IN
+### ANY/SOME
+### ALL
+]
+
+.right-column[
+
+```sql
+SELECT * FROM airports
+ WHERE alt >= ALL (SELECT AVG(alt) FROM airports
+                    GROUP BY tzone);
+```
+
+The airports that have an altitude higher or equal to _all_ the average altitudes by time zone.
+
+]
+
+---
+layout: false
+
+## WITH queries
+
+The `WITH` clause is used to build _common table expressions_ (CTE), which can be thought of as temporary tables that exists for just one query.
+
+???
+If you have a query with a lot of subqueries, it might be beneficial for organisational purposes to use CTEs, especially if you end up using a subquery multiple times.
+
+--
+
+```sql
+WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
+			             AVG(air_time)  AS avg_air_time
+	                FROM flights
+	               GROUP BY origin
+), agg_tbl2 AS (SELECT MIN(avg_dep_delay) AS min_avg_dep_delay,
+			           MIN(avg_air_time)  AS min_avg_air_time
+	              FROM agg_tbl1
+)
+SELECT * FROM flights
+ WHERE dep_delay < (SELECT min_avg_dep_delay FROM agg_tbl2)
+   AND air_time  < (SELECT min_avg_air_time  FROM agg_tbl2);
+```
+
+
+The flights where both the delay on departure and air time are below all the averages by origin.
+
+???
+Here is a (contrived) example;
+instead of having two subqueries, where we group by and summarise the `flights` data, we instead do it once and reference it twice, using a CTE.

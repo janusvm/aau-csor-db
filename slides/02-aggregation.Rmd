@@ -5,13 +5,14 @@ author: "<a href='htps://janusvm.github.io'>Janus Valberg-Madsen</a>"
 date: "2019-03-25 @ Aalborg University"
 output:
   xaringan::moon_reader:
-    css: [default, "../assets/css/xaringan-css/janusvm.css", "../assets/css/xaringan-css/janusvm-fonts.css"]
+    css: [default, "../assets/css/xaringan-css/janusvm.css", "../assets/css/xaringan-css/janusvm-fonts.css", "input/css/custom.css"]
     lib_dir: libs
     nature:
       highlightStyle: none
       highlightLines: true
       countIncrementalSlides: false
       ratio: "16:10"
+      beforeInit: "input/js/macros.js"
 ---
 
 ```{r setup, include=FALSE}
@@ -29,4 +30,25 @@ knitr::opts_chunk$set(
 ---
 layout: false
 ```{r summaries, child = "input/02/summaries.Rmd"}
+```
+
+---
+layout: false
+```{r joins, child = "input/02/joins.Rmd"}
+```
+
+---
+layout: false
+```{r subqueries, child = "input/02/subqueries.Rmd"}
+```
+
+---
+layout: false
+```{r exercises, child = "input/02/exercises.Rmd"}
+```
+
+
+---
+layout: false
+```{r links, child = "input/02/links.Rmd"}
 ```

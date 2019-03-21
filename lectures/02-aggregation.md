@@ -12,9 +12,9 @@ Place
 
 ## Contents of lecture
 
-- Subqueries
-- Aggregating/summarising data server-side
+- Aggregating/summarising data
 - JOINs
+- Subqueries
 
 
 ## Exercises

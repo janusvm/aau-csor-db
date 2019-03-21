@@ -1,8 +1,8 @@
 # Today's topics
 
 - Summarising data
-- How to construct and use _subqueries_
 - Using data from multiple tables with `JOIN`
+- How to construct and use _subqueries_
 - Missing data (`NULL`s)
 
 ???

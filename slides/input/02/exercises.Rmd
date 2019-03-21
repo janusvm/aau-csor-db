@@ -1,0 +1,24 @@
+name: exercises
+
+# Exercises
+
+.pull-left[
+
+Today's [sqlzoo.net](https://sqlzoo.net) exercises are:
+
+- [4 SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial)
+- [5 SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT)
+- [6 JOIN](https://sqlzoo.net/wiki/The_JOIN_operation)
+- [8 Using NULL](https://sqlzoo.net/wiki/Using_Null)
+
+]
+
+.pull-right[
+
+Additional exercises for the fast learners:
+
+1. Fix the error on [this slide](#subquery-in) (i.e. show the flights with planes that _are known_ to have 50 or more seats)
+2. Show flights with planes that have flown at least 100 flights
+3. TBD
+
+]

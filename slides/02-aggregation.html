@@ -7,6 +7,7 @@
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm.css" type="text/css" />
     <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm-fonts.css" type="text/css" />
+    <link rel="stylesheet" href="input/css/custom.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -26,8 +27,8 @@ class: center, middle, inverse, title-slide
 # Today's topics
 
 - Summarising data
-- How to construct and use _subqueries_
 - Using data from multiple tables with `JOIN`
+- How to construct and use _subqueries_
 - Missing data (`NULL`s)
 
 ???
@@ -61,8 +62,507 @@ To summarise data means to calculate aggregate results from many rows into few o
 - `MAX(col)`: the maximum value in `col`
 - `MIN(col)`: the minimum value in `col`
 ]
+
+---
+layout: false
+
+class: snowstorm, middle, center
+
+# Combining data from different tables
+
+how to use the JOIN clause
+
+---
+
+## What is a join?
+
+.pull-left[
+
+`JOIN`: clause for combining relations.
+
+In the examples in this section of the slides (which I've borrowed from [r4ds.had.co.nz](https://r4ds.had.co.nz)), the tables used are:
+
+- `x`, with columns: `key` and `val_x`
+- `y`, with columns: `key` and `val_y`
+
+]
+
+.pull-right[
+
+```sql
+x JOIN_TYPE y [ JOIN_CONDITION ]
+```
+
+![:center 40%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-setup.png)
+
+.center[⬇️]
+
+![:center 50%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-setup2.png)
+
+]
+
+???
+
+An SQL `JOIN` clause is an instruction to combine columns from several tables in a database.
+
+The code snippet should be read as:
+"Join `x` and `y` together with `JOIN_TYPE` optionally conditioning on `JOIN_CONDITION`"
+
+On the following slides, we'll look at the concrete `JOIN_TYPE` and `JOIN_CONDITION` you can use.
+The figures for the different types of joins will use dots and lines to denote the data that will be returned.
+
+---
+## Cross join
+
+`x CROSS JOIN y` ➡️ cartesian product of the rows in `x` and `y`
+
+```sql
+SELECT * FROM x CROSS JOIN y;
+
+SELECT * FROM x, y;
+```
+
+If
+
+- `x` has dimensions `\(n_x \times m_x\)`, and
+- `y` has dimensions `\(n_y \times m_y\)`,
+
+then their cross product has dimensions `\(n_x n_y \times (m_x + m_y)\)`
+
+???
+
+The official PostgreSQL documentation groups the types of joins into two:
+
+- cross join
+- qualified join
+
+The `CROSS JOIN` between `x` and `y` is simply the table you get by taking all columns of both and return all possible combinations of rows
+
+---
+
+## Qualified joins
+
+```sql
+SELECT * FROM x { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN y ON boolean_expression;
+SELECT * FROM x { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN y USING ( join column list );
+SELECT * FROM x NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN y;
+```
+
+???
+
+In contrast to the cross join, the _qualified joins_ only return rows from the two tables which are considering to be "matching", given some condition that evaluates to a boolean value.
+
+The code snippet shown is from the documentation, and it should be read like this:
+
+- For elements in braces `{ ... | ... }`, exactly one of the candidates (delimited by a `|`) must be present
+- Elements in brackets `[ ... ]` are optional
+- Each row in the snippet corresponds to a different way of specifying the join condition
+
+---
+
+## Qualified joins: INNER JOIN
+
+```sql
+SELECT * FROM x JOIN y ON x.key = y.key;
+SELECT * FROM x INNER JOIN y USING (key);
+SELECT * FROM x NATURAL JOIN y;
+```
+
+.pull-left[
+![:center 90%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-inner.png)
+]
+.pull-right[
+![:center 90%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-one-to-many.png)
+]
+
+???
+
+An `INNER JOIN` is the join that selects records found in both `x` and `y`.
+
+That means, that for each row of `x`, the joined table has a row for each row in `y` that satisfies the join condition with that `x`-row.
+
+For example:
+
+- on the left, both `x` and `y` has keys `1` and `2`, so the resulting inner join contains a row for each of these two keys with all the remaining columns from the respective tables
+- on the right, `x` has duplicate keys, so the matching rows from `y` are duplicated (if both tables have multiple keys, you get the cross product of the matching rows)
+
+
+**[covering the example snippets]**
+
+- `INNER JOIN` is the default join type that PostgreSQL uses, if you just type `JOIN`;
+the keyword `ON` lets you match columns with qualified names (i.e. `table.colum`)
+- the keyword `USING` can be used when the columns being matched have the same name in the two tables
+- The `NATURAL` keyword is shorthand for `USING` all the common column names; if there are no common column names, it produces a cross join
+
+---
+
+## Qualified joins: OUTER JOIN
+
+.left-balanced[
+![:center 100%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-outer.png)
+]
+.right-balanced[
+
+```sql
+-- left outer joins
+SELECT * FROM x LEFT JOIN y ON x.key = y.key;
+SELECT * FROM x LEFT OUTER JOIN y USING (key);
+SELECT * FROM x NATURAL LEFT JOIN y;
+```
+
+&lt;br/&gt;
+
+```sql
+-- right outer joins
+SELECT * FROM x RIGHT JOIN y ON x.key = y.key;
+SELECT * FROM x RIGHT OUTER JOIN y USING (key);
+SELECT * FROM x NATURAL RIGHT JOIN y;
+```
+
+&lt;br/&gt;
+
+```sql
+-- full outer joins
+SELECT * FROM x FULL JOIN y ON x.key = y.key;
+SELECT * FROM x FULL OUTER JOIN y USING (key);
+SELECT * FROM x NATURAL FULL JOIN y;
+```
+
+]
+
+???
+
+An `OUTER JOIN` takes all the rows for one or both of the source tables, depending on type, and adds missing values where the join condition was not met.
+
+The `OUTER` keyword is completely optional, as it is already implied by the keywords `LEFT`, `RIGHT`, and `FULL`.
+
+- `LEFT JOIN`: all the rows of `x`, with the columns of `y` padded with `NULL` for non-matching keys
+- `RIGHT JOIN`: same as left join, expect with the roles of `x` and `y` reversed
+- `FULL JOIN`: all rows of both tables, with the columns of both padded with `NULL` whenever they have non-matching keys, respectively
+
+---
+
+## Qualified joins: alternative visual representation
+
+![:center 75%](https://www.cmascenter.org/cost/images/join_types.png)
+
+.footnote[(image source: [cmascenter.org](https://www.cmascenter.org/cost/sql_basics.html))]
+
+???
+Oftentimes in literature, you see the different types of joins represented as Venn diagrams, alluding to mathematical sets.
+
+Think of these sets as sets of keys; different tables often have different colums, so the set interpretation doesn't make a lot of sense when considering whole rows
+
+---
+layout: true
+
+## Useful joins without dedicated syntax
+
+???
+The semi join and the anti join do not have their own syntax in PostgreSQL.
+Instead, the query planner may or may not use these joins for optimisation purposes (we will see an example of that in Lecture 04).
+
+However, in R (`dplyr`), they _do_ have syntax, which we shall see in Lecture 03.
+
+In _R for Data Science_, Hadley Wickham calls these types of joins _filtering joins_.
+
+## Semi join
+
+The semi join selects all rows from `x` that have a matching key in `y`, but without adding any data from `y`.
+
+This can be achieved in PostgreSQL using a nested query, in which you simply identify the rows in `y` that have matching keys.
+Notice the `SELECT 1 FROM y` line; the actual data selected from `y` doesn't matter, as it isn't used anyway, so you can select anything you want here (including `*`).
+
+## Anti join
+
+The anti join is the opposite of the semi join.
+It selects all rows from `x` that do _not_ have a matching key in `y`.
+
+---
+
+.pull-left[
+
+```sql
+-- semi join
+SELECT * FROM x
+ WHERE EXISTS (
+   SELECT 1 FROM y
+    WHERE x.key = y.key
+   );
+```
+
+![:center 100%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-semi.png)
+
+]
+
+.pull-right[
+
+```sql
+-- anti join
+SELECT * FROM x
+ WHERE NOT EXISTS (
+   SELECT 1 FROM y
+    WHERE x.key = y.key
+   )
+```
+
+![:center 100%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-anti.png)
+
+]
+
+---
+count: false
+
+.pull-left[
+
+```sql
+-- semi join
+SELECT * FROM x
+ WHERE EXISTS (
+*  SELECT 1 FROM y
+*   WHERE x.key = y.key
+   );
+```
+
+![:center 100%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-semi.png)
+
+]
+
+.pull-right[
+
+```sql
+-- anti join
+SELECT * FROM x
+ WHERE NOT EXISTS (
+*  SELECT 1 FROM y
+*   WHERE x.key = y.key
+   )
+```
+
+![:center 100%](https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/join-anti.png)
+
+]
+
+???
+## Subquery?
+
+This inner query is an example of what's called a _subquery_. **[next slide]**
+
+---
+layout: false
+
+name: subqueries
+class: snowstorm, middle, center
+
+# Subqueries
+
+queries nested inside another query, enclosed in parentheses
+
+???
+A subquery is also called an _inner query_ or _inner select_.
+
+Such an expression can be in many different cases:
+
+- after a `FROM` clause in place of a table
+- after a binary operator, if the subquery returns only one value
+- after an array comparison function, if the subquery returns only one column
+
+The last case is one you'll see often, so let's explore that a bit
+
+---
+layout: true
+
+## Subquery expressions
+
+---
+.left-column[
+### EXISTS
+]
+
+.right-column[
+
+```sql
+SELECT * FROM flights
+ WHERE EXISTS (SELECT 1 FROM planes
+                WHERE tailnum = flights.tailnum);
+```
+
+Selects the flights where the plane's tail number is recorded in the `planes` table.
+
+```sql
+SELECT * FROM flights
+ WHERE NOT EXISTS (SELECT 1 FROM planes
+                    WHERE tailnum = flights.tailnum);
+```
+
+Selects the flights that do _not_ have a corresponding entry in the `planes` table
+]
+
+???
+An `EXISTS` expression can be used to make semi and anti joins, as demonstrated on the previous slide.
+
+Here is an example using the `nycflights13` data.
+
+---
+name: subquery-in
+
+.left-column[
+### EXISTS
+### IN
+]
+
+.right-column[
+
+```sql
+SELECT * FROM flights
+ WHERE tailnum IN (SELECT tailnum FROM planes
+                    WHERE manufacturer = 'EMBRAER');
+```
+
+All the flights flown by a plane manufactured by EMBRAER
+
+```sql
+SELECT * FROM flights
+ WHERE tailnum NOT IN (SELECT tailnum FROM planes
+                        WHERE seats &lt; 50);
+```
+
+All the flights flown by larger planes (i.e. 50 or more seats)
+
+]
+
+???
+An `IN` expression can for example be used to make a filtering join, where you condition on additionally filtered data from another table.
+
+There is actually a subtle error on the slide; can you identify it?
+
+➡️ the last sentence; in addition to all flights flown by larger planes, the second query will also return the ~50,000 flights flown by planes that don't have a corresponding entry in the `planes` table
+
+---
+
+.left-column[
+### EXISTS
+### IN
+### ANY/SOME
+]
+
+.right-column[
+
+```sql
+SELECT * FROM airports
+ WHERE alt &gt;= ANY (SELECT MAX(alt) FROM airports
+                    GROUP BY tzone);
+```
+
+The airports that have an altitude higher or equal to the maximum altitude of any time zone.
+
+The keyword `SOME` is an alias for `ANY`.
+
+]
+
+---
+
+.left-column[
+### EXISTS
+### IN
+### ANY/SOME
+### ALL
+]
+
+.right-column[
+
+```sql
+SELECT * FROM airports
+ WHERE alt &gt;= ALL (SELECT AVG(alt) FROM airports
+                    GROUP BY tzone);
+```
+
+The airports that have an altitude higher or equal to _all_ the average altitudes by time zone.
+
+]
+
+---
+layout: false
+
+## WITH queries
+
+The `WITH` clause is used to build _common table expressions_ (CTE), which can be thought of as temporary tables that exists for just one query.
+
+???
+If you have a query with a lot of subqueries, it might be beneficial for organisational purposes to use CTEs, especially if you end up using a subquery multiple times.
+
+--
+
+```sql
+WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
+			             AVG(air_time)  AS avg_air_time
+	                FROM flights
+	               GROUP BY origin
+), agg_tbl2 AS (SELECT MIN(avg_dep_delay) AS min_avg_dep_delay,
+			           MIN(avg_air_time)  AS min_avg_air_time
+	              FROM agg_tbl1
+)
+SELECT * FROM flights
+ WHERE dep_delay &lt; (SELECT min_avg_dep_delay FROM agg_tbl2)
+   AND air_time  &lt; (SELECT min_avg_air_time  FROM agg_tbl2);
+```
+
+
+The flights where both the delay on departure and air time are below all the averages by origin.
+
+???
+Here is a (contrived) example;
+instead of having two subqueries, where we group by and summarise the `flights` data, we instead do it once and reference it twice, using a CTE.
+
+---
+layout: false
+
+name: exercises
+
+# Exercises
+
+.pull-left[
+
+Today's [sqlzoo.net](https://sqlzoo.net) exercises are:
+
+- [4 SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial)
+- [5 SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT)
+- [6 JOIN](https://sqlzoo.net/wiki/The_JOIN_operation)
+- [8 Using NULL](https://sqlzoo.net/wiki/Using_Null)
+
+]
+
+.pull-right[
+
+Additional exercises for the fast learners:
+
+1. Fix the error on [this slide](#subquery-in) (i.e. show the flights with planes that _are known_ to have 50 or more seats)
+2. Show flights with planes that have flown at least 100 flights
+3. TBD
+
+]
+
+
+---
+layout: false
+
+name: links
+class: polarnight
+
+# Links 🔗
+
+- Course home page: &lt;https://janusvm.github.com/aau-csor-db&gt;
+- These slides: &lt;https://janusvm.github.com/aau-csor-db/slides/02-aggregation&gt;
+- Relevant pages from the PostgreSQL docs:
+  - Aggregate functions: &lt;https://www.postgresql.org/docs/current/functions-aggregate.html&gt;
+  - Table expressions: &lt;https://www.postgresql.org/docs/current/queries-table-expressions.html&gt;
+  - `WITH` queries: &lt;https://www.postgresql.org/docs/current/queries-with.html&gt;
+- Functions reference (SQLzoo): &lt;https://sqlzoo.net/wiki/Functions_Reference&gt;
+- R For Data Science: &lt;https://r4ds.had.co.nz&gt;
+  - Section _Relational data_: &lt;https://r4ds.had.co.nz/relational-data.html&gt;
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="input/js/macros.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "none",
 "highlightLines": true,
