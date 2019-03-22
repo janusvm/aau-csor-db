@@ -44,9 +44,14 @@ layout: false
 
 ---
 layout: false
-```{r exercises, child = "input/02/exercises.Rmd"}
+```{r nulls, child = "input/02/nulls.Rmd"}
 ```
 
+
+---
+layout: false
+```{r exercises, child = "input/02/exercises.Rmd"}
+```
 
 ---
 layout: false

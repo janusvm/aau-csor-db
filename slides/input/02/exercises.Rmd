@@ -6,10 +6,10 @@ name: exercises
 
 Today's [sqlzoo.net](https://sqlzoo.net) exercises are:
 
-- [4 SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial)
-- [5 SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT)
-- [6 JOIN](https://sqlzoo.net/wiki/The_JOIN_operation)
-- [8 Using NULL](https://sqlzoo.net/wiki/Using_Null)
+- [4 SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nested_SELECT_Quiz))
+- [5 SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT) ([+quiz](https://sqlzoo.net/wiki/SUM_and_COUNT_Quiz))
+- [6 JOIN](https://sqlzoo.net/wiki/The_JOIN_operation) ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz))
+- [8 Using NULL](https://sqlzoo.net/wiki/Using_Null) ([+quiz](https://sqlzoo.net/wiki/Using_Null_Quiz))
 
 ]
 
@@ -17,8 +17,16 @@ Today's [sqlzoo.net](https://sqlzoo.net) exercises are:
 
 Additional exercises for the fast learners:
 
-1. Fix the error on [this slide](#subquery-in) (i.e. show the flights with planes that _are known_ to have 50 or more seats)
-2. Show flights with planes that have flown at least 100 flights
-3. TBD
+1. Fix the error on [this slide](#subquery-in)
 
+    That is, show the flights with planes that _are known_ to have 50 or more seats
+
+2. Show flights with planes that have flown at least 100 flights
+3. What does it mean for a flight to have a missing `tailnum`?
+
+    What do the tail numbers that don't have a matching record in `planes` have in common?
+    (hint: one variable explains ~91% of the problems)
 ]
+
+???
+Hint for extra exercise 3: check `?nycflights13::planes`

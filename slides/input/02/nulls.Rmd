@@ -1,0 +1,38 @@
+# A word on NULLs
+
+`NULL` is a special marker that indicates a value does not exist in the database.
+
+???
+The concept of nulls in SQL is similar to that of `NA` in R.
+
+It is a marker of missingness, not a value in itself.
+
+--
+
+To test if a value is null:
+
+- `r emo::ji("x")` `value = NULL` (returns `NULL`)
+- `r emo::ji("white_check_mark")` `value IS NULL` (similar to `is.na` in R)
+
+???
+Since it is a special marker, you need special syntax to test for nulls.
+
+--
+
+```sql
+-- XOR join
+SELECT *
+  FROM x FULL JOIN y USING (key)
+ WHERE x.key IS NULL
+    OR y.key IS NULL;
+```
+
+???
+An example where it can be used: an "XOR" join, i.e. the rows in `x` or `y`, where they don't have keys in common.
+
+--
+
+To control where nulls are placed when ordering a column:
+
+- `ORDER BY col NULLS FIRST`
+- `ORDER BY col NULLS LAST`

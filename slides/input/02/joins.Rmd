@@ -12,11 +12,12 @@ how to use the JOIN clause
 
 `JOIN`: clause for combining relations.
 
+.footnote[.pull-left[
 In the examples in this section of the slides (which I've borrowed from [r4ds.had.co.nz](https://r4ds.had.co.nz)), the tables used are:
 
 - `x`, with columns: `key` and `val_x`
 - `y`, with columns: `key` and `val_y`
-
+]]
 ]
 
 .pull-right[

@@ -129,7 +129,7 @@ The airports that have an altitude higher or equal to _all_ the average altitude
 ]
 
 ---
-layout: false
+layout: true
 
 ## WITH queries
 
@@ -138,7 +138,54 @@ The `WITH` clause is used to build _common table expressions_ (CTE), which can b
 ???
 If you have a query with a lot of subqueries, it might be beneficial for organisational purposes to use CTEs, especially if you end up using a subquery multiple times.
 
---
+Here is a (contrived) example to illustrate it;
+
+---
+---
+
+```sql
+WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
+			             AVG(air_time)  AS avg_air_time
+	                FROM flights
+	               GROUP BY origin
+),
+⁣
+⁣
+⁣
+⁣
+⁣
+⁣
+```
+
+???
+- The `WITH` clause goes before the `SELECT`; here, we define a temporary table called `agg_tbl1`, calculating the average `dep_delay` and `air_time` by `origin`.
+
+    We can define as many of these as we like, separated by commas.
+
+---
+
+```sql
+WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
+			             AVG(air_time)  AS avg_air_time
+	                FROM flights
+	               GROUP BY origin
+), agg_tbl2 AS (SELECT MIN(avg_dep_delay) AS min_avg_dep_delay,
+			           MIN(avg_air_time)  AS min_avg_air_time
+	              FROM agg_tbl1
+)
+⁣
+⁣
+⁣
+```
+
+???
+- The `WITH` clause goes before the `SELECT`; here, we define a temporary table called `agg_tbl1`, calculating the average `dep_delay` and `air_time` by `origin`.
+
+    We can define as many of these as we like, separated by commas.
+
+- After the comma, we define `agg_tbl2`, where we calculate the minimums of the quantities just calculated in `agg_tbl1`.
+
+---
 
 ```sql
 WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
@@ -158,5 +205,14 @@ SELECT * FROM flights
 The flights where both the delay on departure and air time are below all the averages by origin.
 
 ???
-Here is a (contrived) example;
-instead of having two subqueries, where we group by and summarise the `flights` data, we instead do it once and reference it twice, using a CTE.
+
+- The `WITH` clause goes before the `SELECT`; here, we define a temporary table called `agg_tbl1`, calculating the average `dep_delay` and `air_time` by `origin`.
+
+    We can define as many of these as we like, separated by commas.
+
+- After the comma, we define `agg_tbl2`, where we calculate the minimums of the quantities just calculated in `agg_tbl1`.
+
+- Finally, the actual `SELECT` expression that brings it all together.
+
+So what was the purpose of it?
+Instead of having two subqueries, where we group by and summarise the `flights` data, we instead do it once and reference it twice, using a CTE.

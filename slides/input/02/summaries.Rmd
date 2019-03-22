@@ -2,18 +2,104 @@ class: snowstorm, middle, center
 
 # Summarising data
 
+computing a single result from a set of input values
+
 ???
 
 To summarise data means to calculate aggregate results from many rows into few or a single row.
 
 ---
 
+## What is a summary?
+
+```sql
+ SELECT summary_function(expr) [AS new_name] [, ... ] FROM table
+[ GROUP BY grouping_variables ]
+```
+
+.pull-left[
+
+A _summary function_ aggregates a set of values into one single value (summary)
+
+![:center 95%](input/figs/summary-function.png)
+]
+
+.pull-right[
+
+Use the `GROUP BY` clause to create summaries on a by-group basis
+
+![:center 95%](input/figs/grouped-summary.png)
+]
+
+.footnote[
+(image source: [Data Wrangling cheat sheet by RStudio](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf))
+]
+
+
+???
+More often than not, you don't want to pull out data as-is from your database, but rather calculate some summaries exposing some insight.
+
+The basic syntax for that is as shown: in the column list of `SELECT`, you make calls to so-called _summary functions_, optionally grouping the input values by one or more variables.
+
+
+---
+
 ## Summary functions
 
 .pull-left[
-- `COUNT(*)`: the number of rows
-- `AVG(col)`: the average of the values in `col`
-- `SUM(col)`: the sum of the values in `col`
-- `MAX(col)`: the maximum value in `col`
-- `MIN(col)`: the minimum value in `col`
+- `count(*)`: the number of input rows
+- `count(expr)`: the number of rows where `expr` is not null
+- `avg(expr)`: the average of the input values
+- `sum(expr)`: the sum of the input values
+- `max(expr)`: the maximum input value
+- `min(expr)`: the minimum input value
 ]
+
+.pull-right[
+- `bool_and(expr)`: true if all input values are true
+- `bool_or(expr)`: true if at least one input value is true
+- `corr(Y, X)`: correlation coefficient between X and Y
+- `stddev(expr)`: standard deviation of input values
+- `variance(expr)`: variance of input values
+]
+
+.footnote[
+Many more are available, see the [documentation](https://www.postgresql.org/docs/current/functions-aggregate.html)
+]
+
+???
+Here is a quick overview of some of the summary functions that you'll likely need to use.
+
+Many more are available.
+
+---
+
+## Filtering on summaries: the HAVING clause
+
+- `WHERE`: filter using a condition on individual rows, before grouping
+- `HAVING`: filter using a condition on aggregations, after grouping
+
+???
+When you work with grouped data, you may wish to filter on either individual rows or groups.
+The `WHERE` clause, which you saw last time, does the former, and the `HAVING` clause does the latter.
+
+--
+
+```sql
+SELECT carrier, count(*) FROM flights
+ WHERE origin = 'JFK'
+ GROUP BY carrier
+HAVING min(distance) > 1000;
+```
+
+The carriers whose flights from JFK airport all fly at least 1000 miles to reach their destinations, and their respective number of flights
+
+???
+Here is a small example of the usage of `HAVING`.
+
+--
+
+Syntax rule of thumb:
+
+- `WHERE` goes _before_ `GROUP BY` (filter before grouping)
+- `HAVING` goes _after_ `GROUP BY` (filter after grouping)

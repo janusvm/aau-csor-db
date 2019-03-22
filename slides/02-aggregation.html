@@ -29,10 +29,8 @@ class: center, middle, inverse, title-slide
 - Summarising data
 - Using data from multiple tables with `JOIN`
 - How to construct and use _subqueries_
-- Missing data (`NULL`s)
 
 ???
-
 Today we will dive into SQL queries involving data from multiple sources and how to get just the information you need from the database.
 
 - We'll look at how to produce different kinds of summaries, both on whole tables and on a by-group basis
@@ -47,21 +45,107 @@ class: snowstorm, middle, center
 
 # Summarising data
 
+computing a single result from a set of input values
+
 ???
 
 To summarise data means to calculate aggregate results from many rows into few or a single row.
 
 ---
 
+## What is a summary?
+
+```sql
+ SELECT summary_function(expr) [AS new_name] [, ... ] FROM table
+[ GROUP BY grouping_variables ]
+```
+
+.pull-left[
+
+A _summary function_ aggregates a set of values into one single value (summary)
+
+![:center 95%](input/figs/summary-function.png)
+]
+
+.pull-right[
+
+Use the `GROUP BY` clause to create summaries on a by-group basis
+
+![:center 95%](input/figs/grouped-summary.png)
+]
+
+.footnote[
+(image source: [Data Wrangling cheat sheet by RStudio](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf))
+]
+
+
+???
+More often than not, you don't want to pull out data as-is from your database, but rather calculate some summaries exposing some insight.
+
+The basic syntax for that is as shown: in the column list of `SELECT`, you make calls to so-called _summary functions_, optionally grouping the input values by one or more variables.
+
+
+---
+
 ## Summary functions
 
 .pull-left[
-- `COUNT(*)`: the number of rows
-- `AVG(col)`: the average of the values in `col`
-- `SUM(col)`: the sum of the values in `col`
-- `MAX(col)`: the maximum value in `col`
-- `MIN(col)`: the minimum value in `col`
+- `count(*)`: the number of input rows
+- `count(expr)`: the number of rows where `expr` is not null
+- `avg(expr)`: the average of the input values
+- `sum(expr)`: the sum of the input values
+- `max(expr)`: the maximum input value
+- `min(expr)`: the minimum input value
 ]
+
+.pull-right[
+- `bool_and(expr)`: true if all input values are true
+- `bool_or(expr)`: true if at least one input value is true
+- `corr(Y, X)`: correlation coefficient between X and Y
+- `stddev(expr)`: standard deviation of input values
+- `variance(expr)`: variance of input values
+]
+
+.footnote[
+Many more are available, see the [documentation](https://www.postgresql.org/docs/current/functions-aggregate.html)
+]
+
+???
+Here is a quick overview of some of the summary functions that you'll likely need to use.
+
+Many more are available.
+
+---
+
+## Filtering on summaries: the HAVING clause
+
+- `WHERE`: filter using a condition on individual rows, before grouping
+- `HAVING`: filter using a condition on aggregations, after grouping
+
+???
+When you work with grouped data, you may wish to filter on either individual rows or groups.
+The `WHERE` clause, which you saw last time, does the former, and the `HAVING` clause does the latter.
+
+--
+
+```sql
+SELECT carrier, count(*) FROM flights
+ WHERE origin = 'JFK'
+ GROUP BY carrier
+HAVING min(distance) &gt; 1000;
+```
+
+The carriers whose flights from JFK airport all fly at least 1000 miles to reach their destinations, and their respective number of flights
+
+???
+Here is a small example of the usage of `HAVING`.
+
+--
+
+Syntax rule of thumb:
+
+- `WHERE` goes _before_ `GROUP BY` (filter before grouping)
+- `HAVING` goes _after_ `GROUP BY` (filter after grouping)
 
 ---
 layout: false
@@ -80,11 +164,12 @@ how to use the JOIN clause
 
 `JOIN`: clause for combining relations.
 
+.footnote[.pull-left[
 In the examples in this section of the slides (which I've borrowed from [r4ds.had.co.nz](https://r4ds.had.co.nz)), the tables used are:
 
 - `x`, with columns: `key` and `val_x`
 - `y`, with columns: `key` and `val_y`
-
+]]
 ]
 
 .pull-right[
@@ -482,7 +567,7 @@ The airports that have an altitude higher or equal to _all_ the average altitude
 ]
 
 ---
-layout: false
+layout: true
 
 ## WITH queries
 
@@ -491,7 +576,54 @@ The `WITH` clause is used to build _common table expressions_ (CTE), which can b
 ???
 If you have a query with a lot of subqueries, it might be beneficial for organisational purposes to use CTEs, especially if you end up using a subquery multiple times.
 
---
+Here is a (contrived) example to illustrate it;
+
+---
+---
+
+```sql
+WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
+			             AVG(air_time)  AS avg_air_time
+	                FROM flights
+	               GROUP BY origin
+),
+⁣
+⁣
+⁣
+⁣
+⁣
+⁣
+```
+
+???
+- The `WITH` clause goes before the `SELECT`; here, we define a temporary table called `agg_tbl1`, calculating the average `dep_delay` and `air_time` by `origin`.
+
+    We can define as many of these as we like, separated by commas.
+
+---
+
+```sql
+WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
+			             AVG(air_time)  AS avg_air_time
+	                FROM flights
+	               GROUP BY origin
+), agg_tbl2 AS (SELECT MIN(avg_dep_delay) AS min_avg_dep_delay,
+			           MIN(avg_air_time)  AS min_avg_air_time
+	              FROM agg_tbl1
+)
+⁣
+⁣
+⁣
+```
+
+???
+- The `WITH` clause goes before the `SELECT`; here, we define a temporary table called `agg_tbl1`, calculating the average `dep_delay` and `air_time` by `origin`.
+
+    We can define as many of these as we like, separated by commas.
+
+- After the comma, we define `agg_tbl2`, where we calculate the minimums of the quantities just calculated in `agg_tbl1`.
+
+---
 
 ```sql
 WITH agg_tbl1 AS (SELECT AVG(dep_delay) AS avg_dep_delay,
@@ -511,8 +643,60 @@ SELECT * FROM flights
 The flights where both the delay on departure and air time are below all the averages by origin.
 
 ???
-Here is a (contrived) example;
-instead of having two subqueries, where we group by and summarise the `flights` data, we instead do it once and reference it twice, using a CTE.
+
+- The `WITH` clause goes before the `SELECT`; here, we define a temporary table called `agg_tbl1`, calculating the average `dep_delay` and `air_time` by `origin`.
+
+    We can define as many of these as we like, separated by commas.
+
+- After the comma, we define `agg_tbl2`, where we calculate the minimums of the quantities just calculated in `agg_tbl1`.
+
+- Finally, the actual `SELECT` expression that brings it all together.
+
+So what was the purpose of it?
+Instead of having two subqueries, where we group by and summarise the `flights` data, we instead do it once and reference it twice, using a CTE.
+
+---
+layout: false
+
+# A word on NULLs
+
+`NULL` is a special marker that indicates a value does not exist in the database.
+
+???
+The concept of nulls in SQL is similar to that of `NA` in R.
+
+It is a marker of missingness, not a value in itself.
+
+--
+
+To test if a value is null:
+
+- ❌ `value = NULL` (returns `NULL`)
+- ✅ `value IS NULL` (similar to `is.na` in R)
+
+???
+Since it is a special marker, you need special syntax to test for nulls.
+
+--
+
+```sql
+-- XOR join
+SELECT *
+  FROM x FULL JOIN y USING (key)
+ WHERE x.key IS NULL
+    OR y.key IS NULL;
+```
+
+???
+An example where it can be used: an "XOR" join, i.e. the rows in `x` or `y`, where they don't have keys in common.
+
+--
+
+To control where nulls are placed when ordering a column:
+
+- `ORDER BY col NULLS FIRST`
+- `ORDER BY col NULLS LAST`
+
 
 ---
 layout: false
@@ -525,10 +709,10 @@ name: exercises
 
 Today's [sqlzoo.net](https://sqlzoo.net) exercises are:
 
-- [4 SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial)
-- [5 SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT)
-- [6 JOIN](https://sqlzoo.net/wiki/The_JOIN_operation)
-- [8 Using NULL](https://sqlzoo.net/wiki/Using_Null)
+- [4 SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nested_SELECT_Quiz))
+- [5 SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT) ([+quiz](https://sqlzoo.net/wiki/SUM_and_COUNT_Quiz))
+- [6 JOIN](https://sqlzoo.net/wiki/The_JOIN_operation) ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz))
+- [8 Using NULL](https://sqlzoo.net/wiki/Using_Null) ([+quiz](https://sqlzoo.net/wiki/Using_Null_Quiz))
 
 ]
 
@@ -536,12 +720,19 @@ Today's [sqlzoo.net](https://sqlzoo.net) exercises are:
 
 Additional exercises for the fast learners:
 
-1. Fix the error on [this slide](#subquery-in) (i.e. show the flights with planes that _are known_ to have 50 or more seats)
-2. Show flights with planes that have flown at least 100 flights
-3. TBD
+1. Fix the error on [this slide](#subquery-in)
 
+    That is, show the flights with planes that _are known_ to have 50 or more seats
+
+2. Show flights with planes that have flown at least 100 flights
+3. What does it mean for a flight to have a missing `tailnum`?
+
+    What do the tail numbers that don't have a matching record in `planes` have in common?
+    (hint: one variable explains ~91% of the problems)
 ]
 
+???
+Hint for extra exercise 3: check `?nycflights13::planes`
 
 ---
 layout: false
