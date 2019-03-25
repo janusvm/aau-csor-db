@@ -19,11 +19,12 @@ Place
 
 ## Exercises
 
-- [SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial) ([+quiz](https://sqlzoo.net/wiki/Nested_SELECT_Quiz))
-- [SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT) ([+quiz](https://sqlzoo.net/wiki/SUM_and_COUNT_Quiz))
-- [JOIN](https://sqlzoo.net/wiki/The_JOIN_operation) ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz))
-- [Using NULL](https://sqlzoo.net/wiki/Using_Null) ([+quiz](https://sqlzoo.net/wiki/Using_Null_Quiz))
+- [SELECT within SELECT](https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial) [[solutions](../exercises/sqlzoo/4-select-within-select.sql)] ([+quiz](https://sqlzoo.net/wiki/Nested_SELECT_Quiz))
+- [SUM and COUNT](https://sqlzoo.net/wiki/SUM_and_COUNT) [[solutions](../exercises/sqlzoo/5-sum-and-count.sql)] ([+quiz](https://sqlzoo.net/wiki/SUM_and_COUNT_Quiz))
+- [JOIN](https://sqlzoo.net/wiki/The_JOIN_operation) [[solutions](../exercises/sqlzoo/6-join.sql)] ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz))
+- [Using NULL](https://sqlzoo.net/wiki/Using_Null) [[solutions](../exercises/sqlzoo/8-using-null.sql)] ([+quiz](https://sqlzoo.net/wiki/Using_Null_Quiz))
 
+[Extra exercises](../slides/02-aggregation#exercises) [[solutions](../exercises/extra/02-aggregation.sql)]
 
 ## Literature and resources
 

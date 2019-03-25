@@ -1,3 +1,11 @@
+# Recap of last time
+
+- Introduction to relational databases
+- Basic syntax
+- How to use psql and pgAdmin
+
+---
+
 # Today's topics
 
 - Summarising data
