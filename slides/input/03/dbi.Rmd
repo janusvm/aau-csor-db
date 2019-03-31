@@ -1,0 +1,173 @@
+class: snowstorm, center, middle
+
+# PostgreSQL in R
+
+using the DBI package to query the database
+
+---
+
+## Setting up a connection
+
+???
+The basic component needed to use a database is a _connection object_, which contains all the information necessary for communicating with the postgres server
+
+--
+
+- Front end: `DBI` provides querying functions
+- Back end: `RPostgreSQL` provides the postgres _driver_
+
+???
+You should already have these two packages installed.
+
+--
+
+```{r setup-connection}
+library(DBI)
+con <- dbConnect(
+  drv      = RPostgreSQL::PostgreSQL(),  # driver
+  host     = "localhost",                # host address (running locally on the computer)
+  port     = 5432,                       # host port (default port)
+  dbname   = "nycflights13",             # database name
+  user     = "csor",                     # username for database owner
+  password = "csor"                      # password for database owner
+)
+```
+
+???
+If your postgres server is set up with default settings, and you followed the guide in lecture 1 for setting up the `nycflights13` database, this is how to connect to it in R
+
+---
+
+## Inspect the database
+
+```{r test-connection}
+dbListTables(con)
+str(dbGetInfo(con))
+```
+
+---
+layout: true
+
+## Querying
+
+???
+When we want to SELECT from the database, we have different options depending on when we want the results back.
+
+---
+
+```{r query-send-1}
+(res <- dbSendQuery(con, "SELECT tailnum, year, manufacturer FROM planes LIMIT 5"))
+(df <- dbFetch(res)); class(df)
+dbClearResult(res)
+```
+
+???
+## Query-Fetch-Clear
+
+- `dbSendQuery`: submits and synchronously executes the SQL query to the database engine
+  * NB: it does _not_ extract any records as an R object
+  * The result is an object of class `PostgreSQLResult`, a so-called _result set_
+- `dbFetch`: fetches the records from the result set
+  * NB: this consumes the results
+  * Repeating the fetch will result in no rows being returned the second time
+- `dbClearResult`: frees up resources (locally and remotely) associated with a result set
+  * Necessary to avoid exhausting memory etc.
+
+---
+
+```{r query-send-2}
+res <- dbSendQuery(con, "SELECT tailnum, year, manufacturer FROM planes LIMIT 5")
+while(!dbHasCompleted(res)) {
+  chunk <- dbFetch(res, n = 2)
+  print(nrow(chunk))
+}
+dbClearResult(res)
+```
+
+???
+## Chunk-wise Fetch
+
+`dbFetch` has an optional argument `n` that lets you control how many records you want to fetch.
+
+These records are consumed from the result set, and the next time you fetch, you get records from where you left off.
+
+Again, when using `dbSendQuery` and `dbFetch`, you need to clear the results afterwards manually.
+
+---
+
+```{r query-get}
+(df <- dbGetQuery(con, "SELECT tailnum, year, manufacturer FROM planes LIMIT 5"))
+class(df)
+```
+
+???
+## All at once
+
+The alternative to this 3-step process is to get everything at once with `dbGetQuery`.
+
+Notice that you get _everything_ at once and not chunk-wise as with `dbFetch?`.
+
+Most of the time, however, this is what you want.
+
+---
+layout: true
+
+## Writing to the database
+
+---
+
+```{r write}
+dbExistsTable(con, "iris")
+dbWriteTable(con, "iris", iris)
+dbExistsTable(con, "iris")
+dbListFields(con, "iris")
+```
+
+???
+`DBI` also lets us write to new or existing tables.
+
+For this example:
+
+- `dbExistsTable` tests for existence of a table
+- `dbWriteTable` writes to a table
+  * by default it creates a new table
+  * extra arguments: `overwrite` and `append`
+
+---
+
+```{r append}
+query <- 'SELECT "Species", count(*) FROM iris GROUP BY "Species"'
+dbGetQuery(con, query)
+dbWriteTable(con, "iris", iris, append = TRUE)
+dbGetQuery(con, query)
+```
+
+???
+Pay close attention to the quotes in the first line here;
+
+- `Species` is quotes by double quotes
+- The whole R string is quoted by single quotes
+- In PostgreSQL, single quotes are for strings, and double quotes are for names
+  * an unquoted name is case insensitive, in the way that it's converted to lower case
+  * a quoted name is case sensitive
+  * names with special symbols (spaces, punctuation, etc.) need to be quoted
+- Everything went smoothly previously, because all names were lower case and had no special symbols in them
+
+In a call to `dbWriteTable`, you can pass the argument `append = TRUE` to append rows to an existing table (would otherwise give an error).
+
+Here, we just add the same rows again, causing the query to return double the counts from before.
+
+---
+
+```{r drop}
+dbRemoveTable(con, "iris")
+dbExistsTable(con, "iris")
+dbListTables(con)
+```
+
+???
+Deleting a table from the database is done with `dbRemoveTable`.
+
+It returns `TRUE` on success and raises an error otherwise.
+
+Be careful with this function `r emo::ji("wink")`

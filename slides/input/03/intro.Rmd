@@ -1,0 +1,42 @@
+# Recap of last time
+
+- Aggregation of data using summary functions and grouping variables
+- Using data from multiple sources using joins
+- Usage of subqueries
+- Missing values
+
+---
+
+# Today's topics
+
+- How to connect to a database from R
+- Reading from a database
+- Writing to a database
+- Using `dplyr` to query databases
+- Using database connections in R notebooks
+
+???
+Today we are going to see how to work with databases in R.
+
+First, we'll go through the basics:
+
+- how to set up a _connection_ for communication with the server
+- how to send queries to the server via this connection
+  * SELECTing
+  * INSERTing (not in details, we'll cover that in lecture 4)
+  * (exercises)
+
+For this part, we're still writing SQL statements and just using R wrappers for sending the queries.
+
+Then, we'll turn to the `dplyr` suite of functions:
+
+- a brief introduction to the `tidyverse`
+- how `dplyr` is actually SQL in disguise
+- (exercises)
+
+Finally, we'll take a look at the R Notebook format, which you'll use for the handin exercise:
+
+- how to work with this format
+- how to use an SQL connection in a notebook
+
+Each section will be interactive, meaning you'll be evaluating the code snippets shown in your own R sessions alongside the lecture.

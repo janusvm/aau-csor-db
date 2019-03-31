@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Databases In R Using Tidyverse</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Janus Valberg-Madsen" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm.css" type="text/css" />
+    <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm-fonts.css" type="text/css" />
+    <link rel="stylesheet" href="input/css/custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Databases In R Using Tidyverse
+## Computational Statistics<br>&amp; Operations Research
+### <a href='htps://janusvm.github.io'>Janus Valberg-Madsen</a>
+### 2019-04-01 @ Aalborg University
+
+---
+
+
+
+
+
+# Recap of last time
+
+- Aggregation of data using summary functions and grouping variables
+- Using data from multiple sources using joins
+- Usage of subqueries
+- Missing values
+
+---
+
+# Today's topics
+
+- How to connect to a database from R
+- Reading from a database
+- Writing to a database
+- Using `dplyr` to query databases
+- Using database connections in R notebooks
+
+???
+Today we are going to see how to work with databases in R.
+
+First, we'll go through the basics:
+
+- how to set up a _connection_ for communication with the server
+- how to send queries to the server via this connection
+  * SELECTing
+  * INSERTing (not in details, we'll cover that in lecture 4)
+  * (exercises)
+
+For this part, we're still writing SQL statements and just using R wrappers for sending the queries.
+
+Then, we'll turn to the `dplyr` suite of functions:
+
+- a brief introduction to the `tidyverse`
+- how `dplyr` is actually SQL in disguise
+- (exercises)
+
+Finally, we'll take a look at the R Notebook format, which you'll use for the handin exercise:
+
+- how to work with this format
+- how to use an SQL connection in a notebook
+
+Each section will be interactive, meaning you'll be evaluating the code snippets shown in your own R sessions alongside the lecture.
+
+---
+layout: false
+
+
+class: snowstorm, center, middle
+
+# PostgreSQL in R
+
+using the DBI package to query the database
+
+---
+
+## Setting up a connection
+
+???
+The basic component needed to use a database is a _connection object_, which contains all the information necessary for communicating with the postgres server
+
+--
+
+- Front end: `DBI` provides querying functions
+- Back end: `RPostgreSQL` provides the postgres _driver_
+
+???
+You should already have these two packages installed.
+
+--
+
+
+```r
+library(DBI)
+con &lt;- dbConnect(
+  drv      = RPostgreSQL::PostgreSQL(),  # driver
+  host     = "localhost",                # host address (running locally on the computer)
+  port     = 5432,                       # host port (default port)
+  dbname   = "nycflights13",             # database name
+  user     = "csor",                     # username for database owner
+  password = "csor"                      # password for database owner
+)
+```
+
+???
+If your postgres server is set up with default settings, and you followed the guide in lecture 1 for setting up the `nycflights13` database, this is how to connect to it in R
+
+---
+
+## Inspect the database
+
+
+```r
+dbListTables(con)
+```
+
+```
+## [1] "airlines" "airports" "flights"  "planes"   "weather"
+```
+
+```r
+str(dbGetInfo(con))
+```
+
+```
+## List of 8
+##  $ host           : chr "localhost"
+##  $ port           : chr "5432"
+##  $ user           : chr "csor"
+##  $ dbname         : chr "nycflights13"
+##  $ serverVersion  : chr "10.0.7"
+##  $ protocolVersion: int 3
+##  $ backendPId     : int 17523
+##  $ rsId           : list()
+```
+
+---
+layout: true
+
+## Querying
+
+???
+When we want to SELECT from the database, we have different options depending on when we want the results back.
+
+---
+
+
+```r
+(res &lt;- dbSendQuery(con, "SELECT tailnum, year, manufacturer FROM planes LIMIT 5"))
+```
+
+```
+## &lt;PostgreSQLResult&gt;
+```
+
+```r
+(df &lt;- dbFetch(res)); class(df)
+```
+
+```
+##   tailnum year     manufacturer
+## 1  N10156 2004          EMBRAER
+## 2  N102UW 1998 AIRBUS INDUSTRIE
+## 3  N103US 1999 AIRBUS INDUSTRIE
+## 4  N104UW 1999 AIRBUS INDUSTRIE
+## 5  N10575 2002          EMBRAER
+```
+
+```
+## [1] "data.frame"
+```
+
+```r
+dbClearResult(res)
+```
+
+```
+## [1] TRUE
+```
+
+???
+## Query-Fetch-Clear
+
+- `dbSendQuery`: submits and synchronously executes the SQL query to the database engine
+  * NB: it does _not_ extract any records as an R object
+  * The result is an object of class `PostgreSQLResult`, a so-called _result set_
+- `dbFetch`: fetches the records from the result set
+  * NB: this consumes the results
+  * Repeating the fetch will result in no rows being returned the second time
+- `dbClearResult`: frees up resources (locally and remotely) associated with a result set
+  * Necessary to avoid exhausting memory etc.
+
+---
+
+
+```r
+res &lt;- dbSendQuery(con, "SELECT tailnum, year, manufacturer FROM planes LIMIT 5")
+while(!dbHasCompleted(res)) {
+  chunk &lt;- dbFetch(res, n = 2)
+  print(nrow(chunk))
+}
+```
+
+```
+## [1] 2
+## [1] 2
+## [1] 1
+```
+
+```r
+dbClearResult(res)
+```
+
+```
+## [1] TRUE
+```
+
+???
+## Chunk-wise Fetch
+
+`dbFetch` has an optional argument `n` that lets you control how many records you want to fetch.
+
+These records are consumed from the result set, and the next time you fetch, you get records from where you left off.
+
+Again, when using `dbSendQuery` and `dbFetch`, you need to clear the results afterwards manually.
+
+---
+
+
+```r
+(df &lt;- dbGetQuery(con, "SELECT tailnum, year, manufacturer FROM planes LIMIT 5"))
+```
+
+```
+##   tailnum year     manufacturer
+## 1  N10156 2004          EMBRAER
+## 2  N102UW 1998 AIRBUS INDUSTRIE
+## 3  N103US 1999 AIRBUS INDUSTRIE
+## 4  N104UW 1999 AIRBUS INDUSTRIE
+## 5  N10575 2002          EMBRAER
+```
+
+```r
+class(df)
+```
+
+```
+## [1] "data.frame"
+```
+
+???
+## All at once
+
+The alternative to this 3-step process is to get everything at once with `dbGetQuery`.
+
+Notice that you get _everything_ at once and not chunk-wise as with `dbFetch?`.
+
+Most of the time, however, this is what you want.
+
+---
+layout: true
+
+## Writing to the database
+
+---
+
+
+```r
+dbExistsTable(con, "iris")
+```
+
+```
+## [1] FALSE
+```
+
+```r
+dbWriteTable(con, "iris", iris)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+dbExistsTable(con, "iris")
+```
+
+```
+## [1] TRUE
+```
+
+```r
+dbListFields(con, "iris")
+```
+
+```
+## [1] "row.names"    "Sepal.Length" "Sepal.Width"  "Petal.Length"
+## [5] "Petal.Width"  "Species"
+```
+
+???
+`DBI` also lets us write to new or existing tables.
+
+For this example:
+
+- `dbExistsTable` tests for existence of a table
+- `dbWriteTable` writes to a table
+  * by default it creates a new table
+  * extra arguments: `overwrite` and `append`
+
+---
+
+
+```r
+query &lt;- 'SELECT "Species", count(*) FROM iris GROUP BY "Species"'
+dbGetQuery(con, query)
+```
+
+```
+##      Species count
+## 1  virginica    50
+## 2 versicolor    50
+## 3     setosa    50
+```
+
+```r
+dbWriteTable(con, "iris", iris, append = TRUE)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+dbGetQuery(con, query)
+```
+
+```
+##      Species count
+## 1  virginica   100
+## 2 versicolor   100
+## 3     setosa   100
+```
+
+???
+Pay close attention to the quotes in the first line here;
+
+- `Species` is quotes by double quotes
+- The whole R string is quoted by single quotes
+- In PostgreSQL, single quotes are for strings, and double quotes are for names
+  * an unquoted name is case insensitive, in the way that it's converted to lower case
+  * a quoted name is case sensitive
+  * names with special symbols (spaces, punctuation, etc.) need to be quoted
+- Everything went smoothly previously, because all names were lower case and had no special symbols in them
+
+In a call to `dbWriteTable`, you can pass the argument `append = TRUE` to append rows to an existing table (would otherwise give an error).
+
+Here, we just add the same rows again, causing the query to return double the counts from before.
+
+---
+
+
+```r
+dbRemoveTable(con, "iris")
+```
+
+```
+## [1] TRUE
+```
+
+```r
+dbExistsTable(con, "iris")
+```
+
+```
+## [1] FALSE
+```
+
+```r
+dbListTables(con)
+```
+
+```
+## [1] "airlines" "airports" "flights"  "planes"   "weather"
+```
+
+???
+Deleting a table from the database is done with `dbRemoveTable`.
+
+It returns `TRUE` on success and raises an error otherwise.
+
+Be careful with this function 😉
+
+---
+layout: false
+
+
+name: dbi-exercises
+class: polarnight
+
+## DBI exercises
+
+.pull-left[
+- Load `mtcars` into the database from R
+- Calculate the following in pgAdmin:
+   * Average mileage by number of cylinders and type of transmission (hint: `?mtcars`)
+   * Total weight of the listed cars per manufacturer (hint: look at rownames)
+- Replicate the results using DBI in R
+- Write an R function `query_avg` with
+    * input: `con` (DBI connection), `name` (string), `n` (integer), and `m` (integer, optional)
+    * output: SQL query for returning the average of column number `n` in table `name`, optionally grouped by column number `m`
+
+    Hint: you need to use `dbListFields`
+]
+
+.pull-right[
+- Verify that `query_avg` using the following code:
+    
+    ```r
+    q1 &lt;- query_avg(con, "mtcars", 1)
+    q2 &lt;- query_avg(con, "mtcars", 4, 9)
+    dbGetQuery(con, q1)
+    dbGetQuery(con, q2)
+    ```
+
+    * Before running it: what do you expect it to return?
+    * After running it: did it return the expectation?
+
+- Delete the `mtcars` table from the database
+- Ensure you only have the `nycflights13` tables left; check the output of
+    
+    ```r
+    dbListTables(con)
+    ```
+
+]
+
+---
+
+## Closing a connection
+
+
+```r
+dbDisconnect(con)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+dbListTables(con)
+```
+
+```
+## Error in postgresqlQuickSQL(conn, statement, ...): expired PostgreSQLConnection
+```
+
+---
+layout: false
+
+
+class: center, middle, snowstorm
+
+# tidyverse
+
+a framework for doing data analysis with tidy data
+
+???
+Next, we turn to the `tidyverse` way of doing things.
+
+This package exposes functions that, by now, should feel very SQL-like.
+After a brief introduction to the core concepts of the package, we'll see that those functions translate _directly_ into SQL queries.
+
+---
+
+## Getting started
+
+You should already have `tidyverse` installed; if not:
+
+
+```r
+install.packages("tidyverse")
+```
+
+Load the most important packages in the collection with:
+
+
+```r
+library(tidyverse)
+```
+
+```
+## ── Attaching packages ────────────────────────────────── tidyverse 1.2.1 ──
+```
+
+```
+## ✔ ggplot2 3.0.0     ✔ purrr   0.2.5
+## ✔ tibble  1.4.2     ✔ dplyr   0.7.6
+## ✔ tidyr   0.8.1     ✔ stringr 1.3.1
+## ✔ readr   1.1.1     ✔ forcats 0.3.0
+```
+
+```
+## ── Conflicts ───────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+```
+
+???
+The `tidyverse` package is actually just a so-called _metapackage_.
+It doesn't have any functionality of its own, but rather it acts as an umbrella over a set of packages each with an express purpose, all sharing an underlying design philosophy.
+
+We'll only cover a very small subset of functionality in these slides, but an important one.
+
+---
+
+## Tibbles, the better data.frames
+
+Run the two following lines:
+
+
+```r
+iris
+as_tibble(iris)
+```
+
+What's different?
+
+???
+Our good old `iris` dataset is just a regular `data.frame`, which, when printed, outputs as much as possible (up to 1000 rows).
+
+Coercing it to a tibble gives an immediate quality-of-life improvement, in that the print method only shows what can be fit on the screen.
+
+--
+
+
+```r
+class(iris)
+```
+
+```
+## [1] "data.frame"
+```
+
+```r
+class(as_tibble(iris))
+```
+
+```
+## [1] "tbl_df"     "tbl"        "data.frame"
+```
+
+???
+We see that coercing to a tibble adds the classes `tbl` (pronounced "tibble") and `tbl_df`.
+
+The `tbl` class is a broader, overarching class, and the `tbl_df` class is more specifically a "tibble dataframe" (which is usually what's referred to as a tibble).
+
+---
+
+## What is a tibble, actually?
+
+--
+
+.pull-left[
+&gt; Tibbles are data.frames that are lazy and surly: they do less and complain more
+&gt;
+&gt; [tibble.tidyverse.org](https://tibble.tidyverse.org/)
+]
+
+???
+A tibble is a data.frame that expects you to think more about what you do;
+
+- it is lazy, i.e. it doesn't change variable names or types, it doesn't do partial matching, and it doesn't drop dimensions
+- it complains more, i.e. throws an error when a variable doesn't exit
+- The idea behind this is that this forces you to confront problems early, leading to cleaner code
+- NB: no row names, and row names are dropped on conversion (unless you specify they should be kept)
+
+--
+
+.pull-right[
+
+```r
+tibble(
+  x = 1:5,
+  y = 1,
+  z = x ^ 2 + y
+)
+```
+
+```
+## # A tibble: 5 x 3
+##       x     y     z
+##   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     1     2
+## 2     2     1     5
+## 3     3     1    10
+## 4     4     1    17
+## 5     5     1    26
+```
+]
+
+???
+Tibbles also have handy improvements when it comes to creation:
+
+- it automatically recycles length 1 (and ONLY length 1) variables
+- you can refer to variables you just created
+
+---
+layout: true
+
+## Data analysis verbs
+
+---
+---
+
+.right-column[
+
+```r
+(mtcars_tbl &lt;- as_tibble(rownames_to_column(mtcars, var = "model")))
+```
+
+```
+## # A tibble: 32 x 12
+##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazd…  21       6  160    110  3.9   2.62  16.5     0     1     4     4
+##  2 Mazd…  21       6  160    110  3.9   2.88  17.0     0     1     4     4
+##  3 Dats…  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
+##  4 Horn…  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
+##  5 Horn…  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+##  6 Vali…  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+##  7 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+##  8 Merc…  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+##  9 Merc…  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+## 10 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+## # ... with 22 more rows
+```
+]
+
+---
+
+.left-column[
+### select
+]
+
+.right-column[
+
+```r
+select(mtcars_tbl, model, mpg, cyl, wt:am)
+```
+
+```
+## # A tibble: 32 x 7
+##    model               mpg   cyl    wt  qsec    vs    am
+##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazda RX4          21       6  2.62  16.5     0     1
+##  2 Mazda RX4 Wag      21       6  2.88  17.0     0     1
+##  3 Datsun 710         22.8     4  2.32  18.6     1     1
+##  4 Hornet 4 Drive     21.4     6  3.22  19.4     1     0
+##  5 Hornet Sportabout  18.7     8  3.44  17.0     0     0
+##  6 Valiant            18.1     6  3.46  20.2     1     0
+##  7 Duster 360         14.3     8  3.57  15.8     0     0
+##  8 Merc 240D          24.4     4  3.19  20       1     0
+##  9 Merc 230           22.8     4  3.15  22.9     1     0
+## 10 Merc 280           19.2     6  3.44  18.3     1     0
+## # ... with 22 more rows
+```
+
+]
+---
+
+.left-column[
+### select
+### filter
+]
+
+.right-column[
+
+```r
+filter(mtcars_tbl, am == 0, cyl != 8)
+```
+
+```
+## # A tibble: 7 x 12
+##   model    mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##   &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Horne…  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
+## 2 Valia…  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+## 3 Merc …  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+## 4 Merc …  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+## 5 Merc …  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+## 6 Merc …  17.8     6  168.   123  3.92  3.44  18.9     1     0     4     4
+## 7 Toyot…  21.5     4  120.    97  3.7   2.46  20.0     1     0     3     1
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+]
+
+.right-column[
+
+```r
+tmp &lt;- select(mtcars_tbl, model, mpg, wt)
+mutate(tmp, new_colum = mpg / wt)
+```
+
+```
+## # A tibble: 32 x 4
+##    model               mpg    wt new_colum
+##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1 Mazda RX4          21    2.62      8.02
+##  2 Mazda RX4 Wag      21    2.88      7.30
+##  3 Datsun 710         22.8  2.32      9.83
+##  4 Hornet 4 Drive     21.4  3.22      6.66
+##  5 Hornet Sportabout  18.7  3.44      5.44
+##  6 Valiant            18.1  3.46      5.23
+##  7 Duster 360         14.3  3.57      4.01
+##  8 Merc 240D          24.4  3.19      7.65
+##  9 Merc 230           22.8  3.15      7.24
+## 10 Merc 280           19.2  3.44      5.58
+## # ... with 22 more rows
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+### arrange
+]
+
+.right-column[
+
+```r
+arrange(mtcars_tbl, desc(hp))
+```
+
+```
+## # A tibble: 32 x 12
+##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mase…  15       8  301    335  3.54  3.57  14.6     0     1     5     8
+##  2 Ford…  15.8     8  351    264  4.22  3.17  14.5     0     1     5     4
+##  3 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+##  4 Cama…  13.3     8  350    245  3.73  3.84  15.4     0     0     3     4
+##  5 Chry…  14.7     8  440    230  3.23  5.34  17.4     0     0     3     4
+##  6 Linc…  10.4     8  460    215  3     5.42  17.8     0     0     3     4
+##  7 Cadi…  10.4     8  472    205  2.93  5.25  18.0     0     0     3     4
+##  8 Merc…  16.4     8  276.   180  3.07  4.07  17.4     0     0     3     3
+##  9 Merc…  17.3     8  276.   180  3.07  3.73  17.6     0     0     3     3
+## 10 Merc…  15.2     8  276.   180  3.07  3.78  18       0     0     3     3
+## # ... with 22 more rows
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+### arrange
+### summarise
+]
+
+.right-column[
+
+```r
+summarise(mtcars_tbl, mean(mpg), max(hp), named_summary = first(cyl))
+```
+
+```
+## # A tibble: 1 x 3
+##   `mean(mpg)` `max(hp)` named_summary
+##         &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+## 1        20.1       335             6
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+### arrange
+### summarise
+### group_by
+]
+
+.right-column[
+
+```r
+grouped_df &lt;- group_by(mtcars_tbl, cyl)
+summarise(grouped_df, avg_hp = mean(hp))
+```
+
+```
+## # A tibble: 3 x 2
+##     cyl avg_hp
+##   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     4   82.6
+## 2     6  122. 
+## 3     8  209.
+```
+]
+
+---
+layout: false
+
+## The pipe
+
+`%&gt;%`: uses the result of the left hand side as the first argument of the function on the right hand side.
+
+In RStudio: `Ctrl`+`Shift`+`M` to insert `%&gt;%`
+
+--
+
+.pull-left[
+
+```r
+arrange(
+  summarise(
+    group_by(mtcars_tbl, cyl),
+    avg_hp = mean(hp)
+  ),
+  desc(cyl)
+)
+```
+
+```
+## # A tibble: 3 x 2
+##     cyl avg_hp
+##   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     8  209. 
+## 2     6  122. 
+## 3     4   82.6
+```
+]
+
+--
+
+.pull-right[
+
+```r
+mtcars_tbl %&gt;%
+  group_by(cyl) %&gt;%
+  summarise(avg_hp = mean(hp)) %&gt;%
+  arrange(desc(cyl))
+```
+
+```
+## # A tibble: 3 x 2
+##     cyl avg_hp
+##   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     8  209. 
+## 2     6  122. 
+## 3     4   82.6
+```
+]
+
+---
+
+## Joins... with tibbles
+
+.left-column[
+- `inner_join`
+- `left_join`
+- `right_join`
+- `full_join`
+- `semi_join`
+- `anti_join`
+]
+
+.right-column[
+
+```r
+x &lt;- tibble(key = 1:3, val = paste0("x", key))
+y &lt;- tibble(key = c(1, 2, 4), val = paste0("y", key))
+```
+
+.pull-left[
+
+```r
+inner_join(x, y, by = "key")
+```
+
+```
+## # A tibble: 2 x 3
+##     key val.x val.y
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     1 x1    y1   
+## 2     2 x2    y2
+```
+
+```r
+semi_join(x, y, by = "key")
+```
+
+```
+## # A tibble: 2 x 2
+##     key val  
+##   &lt;int&gt; &lt;chr&gt;
+## 1     1 x1   
+## 2     2 x2
+```
+
+]
+
+.pull-right[
+
+```r
+left_join(x, y, by = "key")
+```
+
+```
+## # A tibble: 3 x 3
+##     key val.x val.y
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     1 x1    y1   
+## 2     2 x2    y2   
+## 3     3 x3    &lt;NA&gt;
+```
+
+```r
+anti_join(x, y, by = "key")
+```
+
+```
+## # A tibble: 1 x 2
+##     key val  
+##   &lt;int&gt; &lt;chr&gt;
+## 1     3 x3
+```
+
+]
+
+]
+
+---
+layout: false
+
+
+class: polarnight, center, middle
+
+# a tibble can be an SQL table
+
+---
+layout: true
+
+## Using an SQL table instead of a data frame
+
+---
+
+--
+
+
+```r
+con &lt;- src_postgres(dbname   = "nycflights13",
+                    host     = "localhost",
+                    port     = 5432,
+                    user     = "csor",
+                    password = "csor")
+```
+
+--
+
+
+```r
+tbl(con, sql("SELECT * FROM airports LIMIT 5"))
+```
+
+```
+## # Source:   SQL [?? x 8]
+## # Database: postgres 10.0.7 [csor@localhost:5432/nycflights13]
+##   faa   name                      lat   lon   alt    tz dst   tzone       
+##   &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;       
+## 1 04G   Lansdowne Airport        41.1 -80.6  1044    -5 A     America/New…
+## 2 06A   Moton Field Municipal …  32.5 -85.7   264    -6 A     America/Chi…
+## 3 06C   Schaumburg Regional      42.0 -88.1   801    -6 A     America/Chi…
+## 4 06N   Randall Airport          41.4 -74.4   523    -5 A     America/New…
+## 5 09J   Jekyll Island Airport    31.1 -81.4    11    -5 A     America/New…
+```
+
+---
+
+
+```r
+airlines &lt;- tbl(con, "airlines")
+airports &lt;- tbl(con, "airports")
+flights  &lt;- tbl(con, "flights")
+planes   &lt;- tbl(con, "planes")
+weather  &lt;- tbl(con, "weather")
+```
+
+--
+
+
+```r
+tmp &lt;- flights %&gt;%
+  group_by(origin) %&gt;%
+  summarise(avg_delay = mean(dep_delay, na.rm = TRUE))
+tmp; class(tmp)
+```
+
+```
+## # Source:   lazy query [?? x 2]
+## # Database: postgres 10.0.7 [csor@localhost:5432/nycflights13]
+##   origin avg_delay
+##   &lt;chr&gt;      &lt;dbl&gt;
+## 1 EWR         15.1
+## 2 JFK         12.1
+## 3 LGA         10.3
+```
+
+```
+## [1] "tbl_dbi"  "tbl_sql"  "tbl_lazy" "tbl"
+```
+
+---
+layout: false
+
+## Collecting data: when you need it in memory
+
+.pull-left[
+
+```r
+collect(airlines)
+```
+
+```
+## # A tibble: 16 x 2
+##    carrier name                       
+##  * &lt;chr&gt;   &lt;chr&gt;                      
+##  1 9E      Endeavor Air Inc.          
+##  2 AA      American Airlines Inc.     
+##  3 AS      Alaska Airlines Inc.       
+##  4 B6      JetBlue Airways            
+##  5 DL      Delta Air Lines Inc.       
+##  6 EV      ExpressJet Airlines Inc.   
+##  7 F9      Frontier Airlines Inc.     
+##  8 FL      AirTran Airways Corporation
+##  9 HA      Hawaiian Airlines Inc.     
+## 10 MQ      Envoy Air                  
+## 11 OO      SkyWest Airlines Inc.      
+## 12 UA      United Air Lines Inc.      
+## 13 US      US Airways Inc.            
+## 14 VX      Virgin America             
+## 15 WN      Southwest Airlines Co.     
+## 16 YV      Mesa Airlines Inc.
+```
+]
+
+.pull-right[
+
+```r
+airlines
+```
+
+```
+## # Source:   table&lt;airlines&gt; [?? x 2]
+## # Database: postgres 10.0.7 [csor@localhost:5432/nycflights13]
+##    carrier name                       
+##    &lt;chr&gt;   &lt;chr&gt;                      
+##  1 9E      Endeavor Air Inc.          
+##  2 AA      American Airlines Inc.     
+##  3 AS      Alaska Airlines Inc.       
+##  4 B6      JetBlue Airways            
+##  5 DL      Delta Air Lines Inc.       
+##  6 EV      ExpressJet Airlines Inc.   
+##  7 F9      Frontier Airlines Inc.     
+##  8 FL      AirTran Airways Corporation
+##  9 HA      Hawaiian Airlines Inc.     
+## 10 MQ      Envoy Air                  
+## # ... with more rows
+```
+
+]
+
+---
+
+## Showing the query
+
+
+```r
+flights %&gt;%
+  select(tailnum) %&gt;%
+  left_join(
+    select(planes, tailnum, manufacturer),
+    by = "tailnum") %&gt;%
+  group_by(manufacturer) %&gt;%
+  count() %&gt;%
+  show_query()
+```
+
+```
+## &lt;SQL&gt;
+## SELECT "manufacturer", COUNT(*) AS "n"
+## FROM (SELECT "TBL_LEFT"."tailnum" AS "tailnum", "TBL_RIGHT"."manufacturer" AS "manufacturer"
+##   FROM (SELECT "tailnum"
+## FROM "flights") "TBL_LEFT"
+##   LEFT JOIN (SELECT "tailnum", "manufacturer"
+## FROM "planes") "TBL_RIGHT"
+##   ON ("TBL_LEFT"."tailnum" = "TBL_RIGHT"."tailnum")
+## ) "wyowzmkdit"
+## GROUP BY "manufacturer"
+```
+
+---
+layout: false
+
+
+class: polarnight
+
+## Exercises
+
+.pull-left[
+For each of the following, solve it first with SQL, then with tidyverse, then compare the output of `show_query` to your SQL solution:
+
+- What is the average arrival delay on flights for each carrier?
+Show the results together with both carrier code and carrier name
+
+- For each carrier, what's the number of flights that don't have matching records in `planes`?
+Show results together with carrier code and name as before
+
+- What is the number of flights for each carrier and destination?
+Show the name of both the carrier and airport, not the id codes
+]
+
+.pull-right[
+For extra exercises, solve the leftover SQLzoo exercises:
+
+- [7 More JOIN operations](https://sqlzoo.net/wiki/More_JOIN_operations) ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz_2))
+- [8+ Numeric Examples](https://sqlzoo.net/wiki/NSS_Tutorial)
+- [9 Self join](https://sqlzoo.net/wiki/Self_join) ([+quiz](https://sqlzoo.net/wiki/Self_join_Quiz))
+]
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="input/js/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "none",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:10"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

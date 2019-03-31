@@ -1,0 +1,46 @@
+name: dbi-exercises
+class: polarnight
+
+## DBI exercises
+
+.pull-left[
+- Load `mtcars` into the database from R
+- Calculate the following in pgAdmin:
+   * Average mileage by number of cylinders and type of transmission (hint: `?mtcars`)
+   * Total weight of the listed cars per manufacturer (hint: look at rownames)
+- Replicate the results using DBI in R
+- Write an R function `query_avg` with
+    * input: `con` (DBI connection), `name` (string), `n` (integer), and `m` (integer, optional)
+    * output: SQL query for returning the average of column number `n` in table `name`, optionally grouped by column number `m`
+
+    Hint: you need to use `dbListFields`
+]
+
+.pull-right[
+- Verify that `query_avg` using the following code:
+    ```{r ex1, eval = FALSE}
+    q1 <- query_avg(con, "mtcars", 1)
+    q2 <- query_avg(con, "mtcars", 4, 9)
+    dbGetQuery(con, q1)
+    dbGetQuery(con, q2)
+    ```
+
+    * Before running it: what do you expect it to return?
+    * After running it: did it return the expectation?
+
+- Delete the `mtcars` table from the database
+- Ensure you only have the `nycflights13` tables left; check the output of
+    ```{r ex2, eval = FALSE}
+    dbListTables(con)
+    ```
+
+]
+
+---
+
+## Closing a connection
+
+```{r dbi-close, error = TRUE}
+dbDisconnect(con)
+dbListTables(con)
+```

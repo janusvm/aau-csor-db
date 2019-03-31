@@ -1,0 +1,78 @@
+class: polarnight, center, middle
+
+# a tibble can be an SQL table
+
+---
+layout: true
+
+## Using an SQL table instead of a data frame
+
+---
+
+--
+
+```{r tidy-sql-setup}
+con <- src_postgres(dbname   = "nycflights13",
+                    host     = "localhost",
+                    port     = 5432,
+                    user     = "csor",
+                    password = "csor")
+```
+
+--
+
+```{r tidy-sql-example}
+tbl(con, sql("SELECT * FROM airports LIMIT 5"))
+```
+
+---
+
+```{r tbl_sql-setup}
+airlines <- tbl(con, "airlines")
+airports <- tbl(con, "airports")
+flights  <- tbl(con, "flights")
+planes   <- tbl(con, "planes")
+weather  <- tbl(con, "weather")
+```
+
+--
+
+```{r tbl_sql-example}
+tmp <- flights %>%
+  group_by(origin) %>%
+  summarise(avg_delay = mean(dep_delay, na.rm = TRUE))
+tmp; class(tmp)
+```
+
+---
+layout: false
+
+## Collecting data: when you need it in memory
+
+.pull-left[
+```{r collect1}
+collect(airlines)
+```
+]
+
+.pull-right[
+```{r collect2}
+airlines
+```
+
+]
+
+---
+
+## Showing the query
+
+```{r show_query2, message = TRUE}
+flights %>%
+  select(tailnum) %>%
+  left_join(
+    select(planes, tailnum, manufacturer),
+    by = "tailnum") %>%
+  group_by(manufacturer) %>%
+  count() %>%
+  show_query()
+```

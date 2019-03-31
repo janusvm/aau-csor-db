@@ -1,0 +1,24 @@
+class: polarnight
+
+## Exercises
+
+.pull-left[
+For each of the following, solve it first with SQL, then with tidyverse, then compare the output of `show_query` to your SQL solution:
+
+- What is the average arrival delay on flights for each carrier?
+Show the results together with both carrier code and carrier name
+
+- For each carrier, what's the number of flights that don't have matching records in `planes`?
+Show results together with carrier code and name as before
+
+- What is the number of flights for each carrier and destination?
+Show the name of both the carrier and airport, not the id codes
+]
+
+.pull-right[
+For extra exercises, solve the leftover SQLzoo exercises:
+
+- [7 More JOIN operations](https://sqlzoo.net/wiki/More_JOIN_operations) ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz_2))
+- [8+ Numeric Examples](https://sqlzoo.net/wiki/NSS_Tutorial)
+- [9 Self join](https://sqlzoo.net/wiki/Self_join) ([+quiz](https://sqlzoo.net/wiki/Self_join_Quiz))
+]

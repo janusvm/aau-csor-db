@@ -1,0 +1,279 @@
+class: center, middle, snowstorm
+
+# tidyverse
+
+a framework for doing data analysis with tidy data
+
+???
+Next, we turn to the `tidyverse` way of doing things.
+
+This package exposes functions that, by now, should feel very SQL-like.
+After a brief introduction to the core concepts of the package, we'll see that those functions translate _directly_ into SQL queries.
+
+---
+
+## Getting started
+
+You should already have `tidyverse` installed; if not:
+
+```{r tidyverse-install, eval = FALSE}
+install.packages("tidyverse")
+```
+
+Load the most important packages in the collection with:
+
+```{r tidyverse-load, message = TRUE}
+library(tidyverse)
+```
+
+???
+The `tidyverse` package is actually just a so-called _metapackage_.
+It doesn't have any functionality of its own, but rather it acts as an umbrella over a set of packages each with an express purpose, all sharing an underlying design philosophy.
+
+We'll only cover a very small subset of functionality in these slides, but an important one.
+
+---
+
+## Tibbles, the better data.frames
+
+Run the two following lines:
+
+```{r tibble, eval = FALSE}
+iris
+as_tibble(iris)
+```
+
+What's different?
+
+???
+Our good old `iris` dataset is just a regular `data.frame`, which, when printed, outputs as much as possible (up to 1000 rows).
+
+Coercing it to a tibble gives an immediate quality-of-life improvement, in that the print method only shows what can be fit on the screen.
+
+--
+
+```{r tibble2}
+class(iris)
+class(as_tibble(iris))
+```
+
+???
+We see that coercing to a tibble adds the classes `tbl` (pronounced "tibble") and `tbl_df`.
+
+The `tbl` class is a broader, overarching class, and the `tbl_df` class is more specifically a "tibble dataframe" (which is usually what's referred to as a tibble).
+
+---
+
+## What is a tibble, actually?
+
+--
+
+.pull-left[
+> Tibbles are data.frames that are lazy and surly: they do less and complain more
+>
+> [tibble.tidyverse.org](https://tibble.tidyverse.org/)
+]
+
+???
+A tibble is a data.frame that expects you to think more about what you do;
+
+- it is lazy, i.e. it doesn't change variable names or types, it doesn't do partial matching, and it doesn't drop dimensions
+- it complains more, i.e. throws an error when a variable doesn't exit
+- The idea behind this is that this forces you to confront problems early, leading to cleaner code
+- NB: no row names, and row names are dropped on conversion (unless you specify they should be kept)
+
+--
+
+.pull-right[
+```{r tibble-example}
+tibble(
+  x = 1:5,
+  y = 1,
+  z = x ^ 2 + y
+)
+```
+]
+
+???
+Tibbles also have handy improvements when it comes to creation:
+
+- it automatically recycles length 1 (and ONLY length 1) variables
+- you can refer to variables you just created
+
+---
+layout: true
+
+## Data analysis verbs
+
+---
+---
+
+.right-column[
+```{r dplyr-setup}
+(mtcars_tbl <- as_tibble(rownames_to_column(mtcars, var = "model")))
+```
+]
+
+---
+
+.left-column[
+### select
+]
+
+.right-column[
+```{r dplyr-select}
+select(mtcars_tbl, model, mpg, cyl, wt:am)
+```
+
+]
+---
+
+.left-column[
+### select
+### filter
+]
+
+.right-column[
+```{r dplyr-filter}
+filter(mtcars_tbl, am == 0, cyl != 8)
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+]
+
+.right-column[
+```{r dplyr-mutate}
+tmp <- select(mtcars_tbl, model, mpg, wt)
+mutate(tmp, new_colum = mpg / wt)
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+### arrange
+]
+
+.right-column[
+```{r dplyr-arrange}
+arrange(mtcars_tbl, desc(hp))
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+### arrange
+### summarise
+]
+
+.right-column[
+```{r dplyr-summarise}
+summarise(mtcars_tbl, mean(mpg), max(hp), named_summary = first(cyl))
+```
+
+]
+
+---
+
+.left-column[
+### select
+### filter
+### mutate
+### arrange
+### summarise
+### group_by
+]
+
+.right-column[
+```{r dplyr-groupby}
+grouped_df <- group_by(mtcars_tbl, cyl)
+summarise(grouped_df, avg_hp = mean(hp))
+```
+]
+
+---
+layout: false
+
+## The pipe
+
+`%>%`: uses the result of the left hand side as the first argument of the function on the right hand side.
+
+In RStudio: `Ctrl`+`Shift`+`M` to insert `%>%`
+
+--
+
+.pull-left[
+```{r pipe-before}
+arrange(
+  summarise(
+    group_by(mtcars_tbl, cyl),
+    avg_hp = mean(hp)
+  ),
+  desc(cyl)
+)
+```
+]
+
+--
+
+.pull-right[
+```{r pipe-after}
+mtcars_tbl %>%
+  group_by(cyl) %>%
+  summarise(avg_hp = mean(hp)) %>%
+  arrange(desc(cyl))
+```
+]
+
+---
+
+## Joins... with tibbles
+
+.left-column[
+- `inner_join`
+- `left_join`
+- `right_join`
+- `full_join`
+- `semi_join`
+- `anti_join`
+]
+
+.right-column[
+```{r dplyr-joins}
+x <- tibble(key = 1:3, val = paste0("x", key))
+y <- tibble(key = c(1, 2, 4), val = paste0("y", key))
+```
+
+.pull-left[
+```{r dplyr-inner-join}
+inner_join(x, y, by = "key")
+semi_join(x, y, by = "key")
+```
+
+]
+
+.pull-right[
+```{r dplyr-full-join}
+left_join(x, y, by = "key")
+anti_join(x, y, by = "key")
+```
+
+]
+
+]

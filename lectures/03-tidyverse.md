@@ -24,8 +24,7 @@ Place
 
 ## Literature and resources
 
+- [Slides](../slides/03-tidyverse)
 - Note on DBI/dbplyr/RPostgreSQL (under construction)
 - [Data wrangling cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
 - [Introduction to dbplyr](https://dbplyr.tidyverse.org/articles/dbplyr.html)
-
-Slides are under construction, check back later...
