@@ -8,14 +8,14 @@ RMD_INPUT := $(wildcard slides/input/*.Rmd)
 
 # Rules ------------------------------------------------------------------------
 
+slides: $(SLIDES_HTML)
+
 define SLIDE_RULE
 $T: $(shell grep -hoE '\binput/.+\.Rmd' $(T:.html=.Rmd)
       | sort -u | sed -e 's/^/slides\//g' |  paste -s -d ' ')
 endef
 
 $(foreach T,$(SLIDES_HTML),$(eval $(SLIDE_RULE)))
-
-slides: $(SLIDES_HTML)
 
 $(SLIDES_HTML): %.html: %.Rmd
 	Rscript -e "rmarkdown::render('$<', 'xaringan::moon_reader')"
