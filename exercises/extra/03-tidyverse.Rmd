@@ -1,0 +1,199 @@
+---
+title: "Lecture 03 exercise solutions"
+author: "Janus Valberg-Madsen"
+output:
+  html_notebook:
+    theme: cosmo
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.align = "center")
+```
+
+## DBI exercises
+
+```{r connection}
+library(DBI)
+con = dbConnect(RPostgreSQL::PostgreSQL(),
+                dbname   = "nycflights13",
+                user     = "csor",
+                password = "csor")
+```
+
+```{r con-set, include = FALSE}
+knitr::opts_chunk$set(connection = "con")
+```
+
+
+### 1 - Load `mtcars` into the database from R
+
+```{r ex1}
+dbWriteTable(con, "mtcars", mtcars)
+```
+
+
+### 2 - Calculate summaries with SQL
+
+Average mileage by number of cylinders:
+
+```{sql ex2-1}
+SELECT cyl, am, avg(mpg) FROM mtcars
+ GROUP BY cyl, am;
+```
+
+Total weight of the listed cars per manufacturer:
+
+```{sql ex2-2}
+SELECT left("row.names", strpos("row.names", ' ') - 1) AS manufacturer,
+       sum(wt)
+  FROM mtcars
+ GROUP BY manufacturer;
+```
+
+
+### 3 - Replicate the results using R
+
+Notice the choice of R string quotes and the escaped single quotes in `q2`:
+
+```{r ex3}
+q1 <- 'SELECT cyl, am, avg(mpg) FROM mtcars GROUP BY cyl, am;'
+dbGetQuery(con, q1)
+q2 <- '
+SELECT left("row.names", strpos("row.names", \' \') - 1) AS manufacturer,
+       sum(wt)
+  FROM mtcars
+ GROUP BY manufacturer;'
+dbGetQuery(con, q2)
+```
+
+
+### 4 - Implementation of `query_avg`
+
+```{r ex4}
+query_avg <- function(con, name, n, m = NULL) {
+  fields <- dbListFields(con, name)
+  enquote <- function(x) paste0('"', x, '"')
+  paste('SELECT',
+        if (!is.null(m)) paste0(enquote(fields[m]), ','),
+        'avg(', enquote(fields[n]), ') FROM', enquote(name),
+        if (!is.null(m)) paste('GROUP BY', enquote(fields[m])), ';')
+}
+```
+
+
+### 5 - Test of `query_avg`
+
+Expectation:
+
+1. `q1` should result in an error, not because of invalid syntax, but because the column number 1 is the automatically created `row.names` column - a string variable, for which an average cannot be calculated. You might expect `mpg` to be the first column, as it is for the `mtcars` data frame, but row names do not exist in SQL.
+2. Keeping the above in mind, `q2` should return the average `disp` grouped by `vs`.
+
+```{r ex5, error = TRUE}
+q1 <- query_avg(con, "mtcars", 1)
+dbGetQuery(con, q1)
+q2 <- query_avg(con, "mtcars", 4, 9)
+dbGetQuery(con, q2)
+```
+
+
+### 6 - Delete `mtcars` from the database again
+
+```{r}
+dbRemoveTable(con, "mtcars")
+```
+
+<!----------------------------------------------------------------------------->
+
+
+## tidyverse exercises
+
+```{r tidy-setup, message = FALSE}
+library(tidyverse)
+flights  <- tbl(con, "flights")
+planes   <- tbl(con, "planes")
+airlines <- tbl(con, "airlines")
+airports <- tbl(con, "airports")
+```
+
+
+For each of the exercises, both pure SQL and tidyverse solutions are shown.
+
+
+### 1 - Average arrival delay for each carrier
+
+```{sql}
+SELECT carrier, name, avg(arr_delay)
+  FROM flights JOIN airlines USING (carrier)
+ GROUP BY carrier, name;
+```
+
+```{r ex-tidy1}
+q <- flights %>%
+  inner_join(airlines, by = "carrier") %>%
+  group_by(carrier, name) %>%
+  summarise(mean(arr_delay, na.rm = TRUE))
+q
+show_query(q)
+```
+
+It is clear to see that while you can easily build valid SQL, it's not necessarily pretty SQL.
+
+
+### 2 - Flights without records in `planes`
+
+Using an _anti join_ subquery, we filter out the records that do have matches and count the remaining.
+
+```{sql}
+SELECT carrier, name, count(*)
+  FROM flights JOIN airlines USING (carrier)
+ WHERE NOT EXISTS (
+   SELECT 1 FROM planes
+    WHERE tailnum = flights.tailnum
+ )
+ GROUP BY carrier, name;
+```
+
+```{r ex-tidy2}
+q <- flights %>%
+  anti_join(planes, by = "tailnum") %>%
+  inner_join(airlines, by = "carrier") %>%
+  group_by(carrier, name) %>%
+  count()
+q
+show_query(q)
+```
+
+Still, aside from the added verbosity, the two queries are largely the same.
+
+
+### 3 - Number of flights by carrier and destination
+
+```{sql}
+SELECT airlines.name AS airline, airports.name AS airport, count(*)
+  FROM flights
+         JOIN airlines USING (carrier)
+         JOIN airports ON (dest = faa)
+ GROUP BY airline, airport
+ ORDER BY airline, airport;
+```
+
+Sorted by airline and airport for clarity.
+
+```{r ex-tidy3}
+q <- flights %>%
+  inner_join(airlines, by = "carrier") %>%
+  inner_join(airports, by = c("dest" = "faa")) %>%
+  rename(airline = name.x,
+         airport = name.y) %>%
+  group_by(airline, airport) %>%
+  count() %>%
+  arrange(airline, airport)
+q
+show_query(q)
+```
