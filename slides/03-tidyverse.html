@@ -135,7 +135,7 @@ str(dbGetInfo(con))
 ##  $ dbname         : chr "nycflights13"
 ##  $ serverVersion  : chr "10.0.7"
 ##  $ protocolVersion: int 3
-##  $ backendPId     : int 17523
+##  $ backendPId     : int 10666
 ##  $ rsId           : list()
 ```
 
@@ -1119,7 +1119,7 @@ flights %&gt;%
 ##   LEFT JOIN (SELECT "tailnum", "manufacturer"
 ## FROM "planes") "TBL_RIGHT"
 ##   ON ("TBL_LEFT"."tailnum" = "TBL_RIGHT"."tailnum")
-## ) "wyowzmkdit"
+## ) "vummveydzo"
 ## GROUP BY "manufacturer"
 ```
 
@@ -1127,6 +1127,72 @@ flights %&gt;%
 layout: false
 
 
+class: snowstorm, middle, center
+
+# The R Notebook format
+
+---
+
+## What is it?
+
+A special R Markdown output format
+
+--
+
+```md
+---
+title: "My R Notebook"
+output: html_notebook
+---
+
+Content goes here...
+```
+
+--
+
+In RStudio: File → New File → R Notebook
+
+--
+
+- Knits to self contained file (.nb.html)
+- .Rmd file is embedded in the knitted file
+- View chunk results inline (in RStudio)
+
+---
+
+## Using SQL connections
+
+After the YAML header:
+
+
+```r
+con &lt;- dbConnect(...)
+knitr::opts_chunk$set(connection = "con")
+```
+
+Notice that `con` is quoted in the second line.
+
+--
+
+After that, you can have SQL chunks with output, like so:
+
+    ```⁣{sql}
+    SELECT * FROM flights LIMIT 10
+    ```
+
+--
+
+You can also set the connection for individual chunks, like so:
+
+    ```⁣{sql, connection = con}
+    SELECT * FROM flights LIMIT 10
+    ```
+
+---
+layout: false
+
+
+name: tidyverse-exercises
 class: polarnight
 
 ## Exercises

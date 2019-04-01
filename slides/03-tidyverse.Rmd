@@ -55,5 +55,11 @@ layout: false
 ---
 layout: false
 
+```{r notbooks, child = "input/03/notebooks.Rmd"}
+```
+
+---
+layout: false
+
 ```{r tidyverse-exercises, child = "input/03/tidyverse-exercises.Rmd"}
 ```

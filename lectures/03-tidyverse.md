@@ -19,12 +19,17 @@ Place
 
 ## Exercises
 
-- TBD
+Described in the slides [here](../slides/03-tidyverse#dbi-exercises) and [here](../slides/03-tidyverse#tidyverse-exercises) [[solutions for both](../exercises/extra/03-tidyverse.nb.html)]
+
+Extra exercises on SQLzoo:
+
+- [7 More JOIN operations](https://sqlzoo.net/wiki/More_JOIN_operations) [[solutions](../exercises/sqlzoo/7-more-join-operations.sql)] ([+quiz](https://sqlzoo.net/wiki/JOIN_Quiz_2))
+- [8+ Numeric Examples](https://sqlzoo.net/wiki/NSS_Tutorial) [[solutions](../exercises/sqlzoo/8plus-numeric-examples.sql)]
+- [9 Self join](https://sqlzoo.net/wiki/Self_join) [[solutions](../exercises/sqlzoo/9-self-join.sql)] ([+quiz](https://sqlzoo.net/wiki/Self_join_Quiz))
 
 
 ## Literature and resources
 
 - [Slides](../slides/03-tidyverse)
-- Note on DBI/dbplyr/RPostgreSQL (under construction)
 - [Data wrangling cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
 - [Introduction to dbplyr](https://dbplyr.tidyverse.org/articles/dbplyr.html)
