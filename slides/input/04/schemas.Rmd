@@ -1,0 +1,116 @@
+## Organising tables with schemas
+
+Schemas are commonly used to group together related tables and restrict access, e.g.
+
+--
+
+  * Different schemas for different branches of a large company
+
+???
+For example, a supermarket chain might have data for its stores, and each location has a seperate schema, to which the regional manager has access, with analysts in HQ having access across multiple stores.
+
+--
+
+  * Seperate schemas for each user of a web application
+
+???
+Since you can restrict access for different users to different schemas, a way of organising user data is to assign each user to a different schema.
+
+We'll look a little closer at this example
+
+---
+
+### Create users
+
+```sql
+SELECT current_database();
+SELECT current_user;
+SET ROLE postgres;
+```
+
+???
+First, ensure you are logged into `testdb` as `postgres`.
+(in pgAdmin, click on `testdb` in the sidebar, and _then_ open the query tool)
+
+--
+
+```sql
+CREATE USER alice;
+CREATE ROLE bob WITH LOGIN;
+```
+
+???
+Let's create two users: `alice` and `bob`.
+Two different ways:
+
+  * `USER` has `LOGIN` privilege by default
+  * `ROLE` does not have `LOGIN` by default
+
+--
+
+### Create schemas
+
+```sql
+CREATE SCHEMA AUTHORIZATION alice;
+ALTER USER alice SET search_path = alice;
+```
+
+Repeat with bob using pgAdmin's interface (right click on Schemas and select Create)
+
+???
+Try create a schema for each of `alice` and `bob`;
+
+  * Create `alice`'s schema using the command shown
+  * Create `bob`'s schema similarly to `alice` using pgAdmin's interface
+    * the `search_path` option is found under Parameters
+
+The configuration shown here will do the following:
+
+  * Create a schema called `alice`, owned by `alice`
+  * Set `alice`'s _search path_ to the `alice` schema; this makes it so that selecting from unqualified tables use the `alice` schema
+
+---
+
+### Create tables
+
+--
+
+```sql
+SET ROLE alice;
+CREATE TABLE alice.transactions (
+  id serial PRIMARY KEY,
+  date date NOT NULL,
+  account integer,
+  amount double precision NOT NULL,
+  comment varchar(20)
+);
+```
+
+Repeat with Bob using pgAdmin - note the constraints.
+
+---
+
+### Insert values into the new tables
+
+```sql
+INSERT INTO alice.transactions (date, account, amount, comment)
+VALUES ('2019-01-01', 12340001, 100.00, 'initial deposit'),
+       ('2019-01-02', 12340001, -50.00, 'coffee funds');
+INSERT INTO alice.transactions (date, account, amount)
+VALUES ('2019-01-03', 12340002, 200.00);
+INSERT INTO alice.transactions
+VALUES (123, '2019-02-01', 12340001, -25.00, 'emergency coffee');
+```
+
+Make up some entries for Bob (make the `account` numbers different from `alice`'s)
+
+Note the `id` column; the `serial` type automatically increments, but you can set it manually too
+
+  * What happens if you add a record with auto-increment, when that `id` already exists?
+
+--
+
+There now are two tables called `transactions`, in each their own schema.
+
+  * What happens if you `SELECT` from `transactions` as `alice`? As `bob`? As `csor`?
+  * What happens if you `SELECT` from `bob.transactions` as `alice`? As `csor`?

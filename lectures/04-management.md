@@ -26,6 +26,7 @@ Place
 
 ## Literature and resources
 
+- [Slides](../slides/04-management)
 - [D&W] Chapter 4, section _Using Views_
 - [D&W] Chapter 7, section _Indices_
 - [Docs] Chapter 8, _Data Types_, sections 1, 3, and 6

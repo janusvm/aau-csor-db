@@ -1,0 +1,29 @@
+## Clean up
+
+```sql
+RESET ROLE;
+```
+
+Delete contents of table (but keep table)
+
+```sql
+TRUNCATE TABLE alice.transactions;
+```
+
+Delete object
+
+```sql
+DROP { TABLE | VIEW | SCHEMA | etc. } name;
+```
+
+Delete whole schema and everything in it
+
+```sql
+DROP SCHEMA alice CASCADE;
+```
+
+Delete user
+
+```sql
+DROP USER alice;
+```

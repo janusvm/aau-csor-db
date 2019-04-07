@@ -1,0 +1,30 @@
+# Recap of last time
+
+- Connecting to a database in R
+- Using the `DBI` package to read and write data from and to the database
+- Using the `dplyr` package to construct SQL calls with R functions
+- The R notebook format and how to use it for your handin exercise
+
+---
+
+# Today's topics
+
+- Setting up a database manually
+- The components of a database
+  * Schemas
+  * Tables
+  * Views
+- Analysing queries
+- Using Indexes
+- Importing and exporting data
+
+???
+Today, we are diving into the more technical aspects of the course:
+
+  * We'll take a closer look at the components of a database and how to create and control certain components
+      * Creating tables with SQL; types, keys, constraints, `INSERT`, `UPDATE`, etc.
+      * Organising tables (and other objects) using Schemas
+      * Saving queries using Views
+  * Tools for analysing query performance (`EXPLAIN ANALYZE`)
+  * Indexes; effect on performance and how to create them
+  * Import and export (from and to CSV)

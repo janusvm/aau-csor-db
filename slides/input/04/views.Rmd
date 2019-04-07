@@ -1,0 +1,67 @@
+name: views
+class: snowstorm, middle, center
+
+# Views
+
+queries saved server-side
+
+---
+
+## What is a View?
+
+--
+
+  * Another way to present data from the database
+
+--
+
+  * Based on one or more tables
+
+--
+
+  * A query with an assigned name
+
+---
+
+## Create a view
+
+```sql
+SET ROLE alice;
+CREATE VIEW balance AS (
+  SELECT account,
+         sum(amount) AS balance
+    FROM transactions
+   GROUP BY account
+);
+```
+
+You know the drill - repeat with Bob in pgAdmin.
+
+---
+
+## Materialized views
+
+More like actual tables - needs to be refreshed when the source gets updated.
+
+```sql
+CREATE MATERIALIZED VIEW matbalance AS (
+  SELECT account,
+         sum(amount) AS balance
+    FROM transactions
+   GROUP BY account
+);
+```
+
+Same as the regular view.
+
+  * Try selecting from both to confirm they return the same data
+  * Add a row to `transactions`
+  * Select from both again. What's different now?
+
+--
+
+Materialized views must be updated with
+
+```sql
+REFRESH MATERIALIZED VIEW matbalance;
+```

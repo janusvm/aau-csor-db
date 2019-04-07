@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Management and Performance</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Janus Valberg-Madsen" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm.css" type="text/css" />
+    <link rel="stylesheet" href="../assets/css/xaringan-css/janusvm-fonts.css" type="text/css" />
+    <link rel="stylesheet" href="input/css/custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Management and Performance
+## Computational Statistics<br>&amp; Operations Research
+### <a href='htps://janusvm.github.io'>Janus Valberg-Madsen</a>
+### 2019-04-08 @ Aalborg University
+
+---
+
+
+
+
+
+# Recap of last time
+
+- Connecting to a database in R
+- Using the `DBI` package to read and write data from and to the database
+- Using the `dplyr` package to construct SQL calls with R functions
+- The R notebook format and how to use it for your handin exercise
+
+---
+
+# Today's topics
+
+- Setting up a database manually
+- The components of a database
+  * Schemas
+  * Tables
+  * Views
+- Analysing queries
+- Using Indexes
+- Importing and exporting data
+
+???
+Today, we are diving into the more technical aspects of the course:
+
+  * We'll take a closer look at the components of a database and how to create and control certain components
+      * Creating tables with SQL; types, keys, constraints, `INSERT`, `UPDATE`, etc.
+      * Organising tables (and other objects) using Schemas
+      * Saving queries using Views
+  * Tools for analysing query performance (`EXPLAIN ANALYZE`)
+  * Indexes; effect on performance and how to create them
+  * Import and export (from and to CSV)
+
+---
+layout: false
+
+
+name: database
+class: snowstorm, middle, center
+
+# A closer look at PostgreSQL databases
+
+???
+In this section we will take another look at the components of a database, and how to work with them from an administrating point of view.
+
+We'll set up a new database, look at how to organise it, define and populate tables for different users, all with SQL code.
+
+---
+
+## SQL is more than queries: `CREATE`
+
+???
+Until now, we've been using either pgAdmin or R to create objects on our PostgreSQL server.
+
+Both ways, under the hood, are eventually reduced to SQL `CREATE` calls.
+
+--
+
+```sql
+CREATE DATABASE name
+    [ [ WITH ] [ OWNER [=] user_name ]
+           [ TEMPLATE [=] template ]
+           [ ENCODING [=] encoding ]
+           [ LC_COLLATE [=] lc_collate ]
+           [ LC_CTYPE [=] lc_ctype ]
+           [ TABLESPACE [=] tablespace_name ]
+           [ ALLOW_CONNECTIONS [=] allowconn ]
+           [ CONNECTION LIMIT [=] connlimit ]
+           [ IS_TEMPLATE [=] istemplate ] ]
+```
+
+???
+This is the full syntax for creating a new database in PostgreSQL.
+
+  * As usual, bracketed expressions are optional
+  * Usually, the defaults are fine
+
+--
+
+```sql
+CREATE DATABASE testdb
+  WITH
+  OWNER = csor;
+```
+
+???
+Let's create a new database for this lecture (we'll delete it again later).
+
+  * Set `OWNER` to `csor` and keep the rest at the defaults (by not specifying values)
+  * In pgAdmin, if it's not showing up yet, select Databases and go to Object → Refresh
+
+---
+layout: true
+
+## Overview of a database
+
+.left-balanced[
+![:center 80%](input/figs/db-overview.png)
+]
+
+???
+So far, we've just been working with tables, but a PostgreSQL database is comprised of many things.
+
+Since we won't be using most of them, I'll just sprint through the list, so consider this a shallow overview.
+
+---
+
+---
+
+.right-balanced[
+Contents of a PostgreSQL database:
+
+  * **Casts**: specifications of how to convert between types
+  * **Catalogs**: database metadata tables
+  * **Event triggers**: automatic commands triggered by certain events
+  * **Extensions**: plugins for PostgreSQL
+  * **Foreign data wrappers**: methods to query external sources
+  * **Languages**: procedural languages used to write user-defined functions
+  * **Schemas**: collections of objects for organising data
+]
+
+???
+
+  * Casts are functions for converting between types (can be useful if you e.g. define your own Types)
+  * Catalogs contain metadata about your database. In one of the exercises, you'll try querying information from the catalog
+  * Event triggers are commands that are executed automatically on certain "events"
+  * Extensions are plugins that extend the functionality of the database
+  * Foreign data wrappers lets you create so-called _foreign tables_ that are proxies for some other data source - it can be a flat file, or even another SQL database. Querying against such a table makes the FDW query the external source and return results as if it came from a table in your database
+  * Languages are programming languages for writing functions, they need to be declared. PostgreSQL has its own, PL/pgSQL, but you can also use popular general purpose languages like Perl, Python, and of course C
+  * Schemas can be thought of as similar to system file folders (except they can't be nested)
+
+---
+
+.right-balanced[
+Contents of a _schema_:
+
+  * **Collations**: sort order specifications
+  * **Domains**: custom types with constraints
+  * **FTS**: full text search related objects
+  * **Foreign tables**: external data sources
+  * **Functions**: user defined functions
+  * **Materialized Views**: views stored as tables
+  * **Sequences**: sequential number generators
+  * **Tables**: collections of records
+  * **Trigger functions**: automatically invoked functions
+  * **Types**: custom types
+  * **Views**: saved queries
+]
+
+???
+
+  * Collations define sort orders for strings, and different such orders exists, e.g. for accented characters
+  * Domains are like Types, except they have constraints; this can be useful to use instead of repeating constraints on different tables
+  * FTS is used for more performant string searching (we won't be covering this though)
+  * Foreign tables are objects used to query data sources that are not on the PostgreSQL server itself
+  * Materialized views are Views that are stored as tables (more on this later)
+  * Sequences are usually used for unique identifiers for rows in tables
+  * Tables is where your data lives
+  * Trigger functions are special functions that are invoked whenever an event associated with a table occurs (event triggers act more "globally")
+  * Types are custom types, usually composite types (i.e. types composed of several primitive types)
+  * Views are basically queries that are saved and can be used in place of tables (more on this later)
+
+---
+layout: false
+
+
+## Organising tables with schemas
+
+Schemas are commonly used to group together related tables and restrict access, e.g.
+
+--
+
+  * Different schemas for different branches of a large company
+
+???
+For example, a supermarket chain might have data for its stores, and each location has a seperate schema, to which the regional manager has access, with analysts in HQ having access across multiple stores.
+
+--
+
+  * Seperate schemas for each user of a web application
+
+???
+Since you can restrict access for different users to different schemas, a way of organising user data is to assign each user to a different schema.
+
+We'll look a little closer at this example
+
+---
+
+### Create users
+
+```sql
+SELECT current_database();
+SELECT current_user;
+SET ROLE postgres;
+```
+
+???
+First, ensure you are logged into `testdb` as `postgres`.
+(in pgAdmin, click on `testdb` in the sidebar, and _then_ open the query tool)
+
+--
+
+```sql
+CREATE USER alice;
+CREATE ROLE bob WITH LOGIN;
+```
+
+???
+Let's create two users: `alice` and `bob`.
+Two different ways:
+
+  * `USER` has `LOGIN` privilege by default
+  * `ROLE` does not have `LOGIN` by default
+
+--
+
+### Create schemas
+
+```sql
+CREATE SCHEMA AUTHORIZATION alice;
+ALTER USER alice SET search_path = alice;
+```
+
+Repeat with bob using pgAdmin's interface (right click on Schemas and select Create)
+
+???
+Try create a schema for each of `alice` and `bob`;
+
+  * Create `alice`'s schema using the command shown
+  * Create `bob`'s schema similarly to `alice` using pgAdmin's interface
+    * the `search_path` option is found under Parameters
+
+The configuration shown here will do the following:
+
+  * Create a schema called `alice`, owned by `alice`
+  * Set `alice`'s _search path_ to the `alice` schema; this makes it so that selecting from unqualified tables use the `alice` schema
+
+---
+
+### Create tables
+
+--
+
+```sql
+SET ROLE alice;
+CREATE TABLE alice.transactions (
+  id serial PRIMARY KEY,
+  date date NOT NULL,
+  account integer,
+  amount double precision NOT NULL,
+  comment varchar(20)
+);
+```
+
+Repeat with Bob using pgAdmin - note the constraints.
+
+---
+
+### Insert values into the new tables
+
+```sql
+INSERT INTO alice.transactions (date, account, amount, comment)
+VALUES ('2019-01-01', 12340001, 100.00, 'initial deposit'),
+       ('2019-01-02', 12340001, -50.00, 'coffee funds');
+INSERT INTO alice.transactions (date, account, amount)
+VALUES ('2019-01-03', 12340002, 200.00);
+INSERT INTO alice.transactions
+VALUES (123, '2019-02-01', 12340001, -25.00, 'emergency coffee');
+```
+
+Make up some entries for Bob (make the `account` numbers different from `alice`'s)
+
+Note the `id` column; the `serial` type automatically increments, but you can set it manually too
+
+  * What happens if you add a record with auto-increment, when that `id` already exists?
+
+--
+
+There now are two tables called `transactions`, in each their own schema.
+
+  * What happens if you `SELECT` from `transactions` as `alice`? As `bob`? As `csor`?
+  * What happens if you `SELECT` from `bob.transactions` as `alice`? As `csor`?
+
+---
+layout: false
+
+
+name: views
+class: snowstorm, middle, center
+
+# Views
+
+queries saved server-side
+
+---
+
+## What is a View?
+
+--
+
+  * Another way to present data from the database
+
+--
+
+  * Based on one or more tables
+
+--
+
+  * A query with an assigned name
+
+---
+
+## Create a view
+
+```sql
+SET ROLE alice;
+CREATE VIEW balance AS (
+  SELECT account,
+         sum(amount) AS balance
+    FROM transactions
+   GROUP BY account
+);
+```
+
+You know the drill - repeat with Bob in pgAdmin.
+
+---
+
+## Materialized views
+
+More like actual tables - needs to be refreshed when the source gets updated.
+
+```sql
+CREATE MATERIALIZED VIEW matbalance AS (
+  SELECT account,
+         sum(amount) AS balance
+    FROM transactions
+   GROUP BY account
+);
+```
+
+Same as the regular view.
+
+  * Try selecting from both to confirm they return the same data
+  * Add a row to `transactions`
+  * Select from both again. What's different now?
+
+--
+
+Materialized views must be updated with
+
+```sql
+REFRESH MATERIALIZED VIEW matbalance;
+```
+
+---
+layout: false
+
+
+## Clean up
+
+```sql
+RESET ROLE;
+```
+
+Delete contents of table (but keep table)
+
+```sql
+TRUNCATE TABLE alice.transactions;
+```
+
+Delete object
+
+```sql
+DROP { TABLE | VIEW | SCHEMA | etc. } name;
+```
+
+Delete whole schema and everything in it
+
+```sql
+DROP SCHEMA alice CASCADE;
+```
+
+Delete user
+
+```sql
+DROP USER alice;
+```
+
+---
+layout: false
+
+
+name: performance
+class: snowstorm, middle, center
+
+# Performance
+
+analyzing queries and boosting performance with indexes
+
+---
+
+## EXPLAIN ANALYZE
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM flights
+ WHERE EXISTS (SELECT 1 FROM planes
+                WHERE tailnum = flights.tailnum)
+   AND origin = 'JFK';
+```
+
+In pgAdmin: type in a query (without `EXPLAIN ANALYZE`) and hit F7
+
+![:center 75%](input/figs/query-plan.svg)
+
+---
+
+## Indexes
+
+Stored information about the sorting of a column, speeds up `WHERE` clauses.
+
+  * Can be created for single or multiple columns
+  * Speedup gained when using all indexed columns (with `WHERE` and `AND`)
+  * Indexes can be unique (but doesn't have to be)
+  * Primary keys
+    * Implies non-`NULL` unique index
+
+--
+
+```sql
+CREATE INDEX index_name
+  ON table_name
+  USING btree
+  (col1, col2, ...);
+```
+
+???
+This is the syntax for creating an index in SQL.
+
+  * `USING` algorithm can be one of several, usually `btree` is best choice
+  * One or more columns to index in the list
+
+---
+
+## Motivating example
+
+In `testdb`:
+
+```sql
+CREATE TABLE huge_data_table AS
+  SELECT s, round(s/10000, 0) AS s_round
+    FROM generate_series(1, 10000000) s;
+```
+
+--
+
+```sql
+EXPLAIN ANALYZE
+  SELECT AVG(s)
+  FROM huge_data_table
+  WHERE s_round = 10;
+```
+
+--
+
+```sql
+CREATE INDEX s_round_index
+  ON huge_data_table
+  USING btree
+  (s_round);
+```
+
+---
+class: polarnight
+
+## Exercise
+
+In the `nycflights13` database:
+
+  * Create a copy of `flights` without indexes:
+
+  ```sql
+  SELECT * INTO flights_noindex FROM flights;
+  ```
+
+  * Look up the indexes on `flights`; both via pgAdmin and using the catalog:
+
+  ```sql
+  SELECT tablename, indexname, indexdef
+    FROM pg_indexes
+   WHERE tablename = 'flights';
+  ```
+
+  * Come up with some queries whose query plan are different when running them on `flights` and `flights_noindex`, respectively
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="input/js/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "none",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:10"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

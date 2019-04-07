@@ -1,0 +1,102 @@
+name: performance
+class: snowstorm, middle, center
+
+# Performance
+
+analyzing queries and boosting performance with indexes
+
+---
+
+## EXPLAIN ANALYZE
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM flights
+ WHERE EXISTS (SELECT 1 FROM planes
+                WHERE tailnum = flights.tailnum)
+   AND origin = 'JFK';
+```
+
+In pgAdmin: type in a query (without `EXPLAIN ANALYZE`) and hit F7
+
+![:center 75%](input/figs/query-plan.svg)
+
+---
+
+## Indexes
+
+Stored information about the sorting of a column, speeds up `WHERE` clauses.
+
+  * Can be created for single or multiple columns
+  * Speedup gained when using all indexed columns (with `WHERE` and `AND`)
+  * Indexes can be unique (but doesn't have to be)
+  * Primary keys
+    * Implies non-`NULL` unique index
+
+--
+
+```sql
+CREATE INDEX index_name
+  ON table_name
+  USING btree
+  (col1, col2, ...);
+```
+
+???
+This is the syntax for creating an index in SQL.
+
+  * `USING` algorithm can be one of several, usually `btree` is best choice
+  * One or more columns to index in the list
+
+---
+
+## Motivating example
+
+In `testdb`:
+
+```sql
+CREATE TABLE huge_data_table AS
+  SELECT s, round(s/10000, 0) AS s_round
+    FROM generate_series(1, 10000000) s;
+```
+
+--
+
+```sql
+EXPLAIN ANALYZE
+  SELECT AVG(s)
+  FROM huge_data_table
+  WHERE s_round = 10;
+```
+
+--
+
+```sql
+CREATE INDEX s_round_index
+  ON huge_data_table
+  USING btree
+  (s_round);
+```
+
+---
+class: polarnight
+
+## Exercise
+
+In the `nycflights13` database:
+
+  * Create a copy of `flights` without indexes:
+
+  ```sql
+  SELECT * INTO flights_noindex FROM flights;
+  ```
+
+  * Look up the indexes on `flights`; both via pgAdmin and using the catalog:
+
+  ```sql
+  SELECT tablename, indexname, indexdef
+    FROM pg_indexes
+   WHERE tablename = 'flights';
+  ```
+
+  * Come up with some queries whose query plan are different when running them on `flights` and `flights_noindex`, respectively
