@@ -57,3 +57,9 @@ layout: false
 
 ```{r performance, child = "input/04/performance.Rmd"}
 ```
+
+---
+layout: false
+
+```{r export, child = "input/04/export.Rmd"}
+```

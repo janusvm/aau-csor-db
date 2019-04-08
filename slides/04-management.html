@@ -517,6 +517,38 @@ In the `nycflights13` database:
   ```
 
   * Come up with some queries whose query plan are different when running them on `flights` and `flights_noindex`, respectively
+
+---
+layout: false
+
+
+## Import and export
+
+Save table to CSV file:
+
+```sql
+COPY airlines TO '/tmp/airlines.csv' WITH (
+  FORMAT csv,
+  HEADER true,
+  DELIMITER ','
+);
+```
+
+--
+
+Import table from CSV file:
+
+```sql
+CREATE TABLE airlines2 (carrier text, name text);
+```
+
+```sql
+COPY airlines2 FROM '/tmp/airlines.csv' WITH (
+  FORMAT csv,
+  HEADER true,
+  DELIMITER ','
+);
+```
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="input/js/macros.js"></script>

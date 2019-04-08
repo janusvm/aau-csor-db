@@ -1,0 +1,27 @@
+## Import and export
+
+Save table to CSV file:
+
+```sql
+COPY airlines TO '/tmp/airlines.csv' WITH (
+  FORMAT csv,
+  HEADER true,
+  DELIMITER ','
+);
+```
+
+--
+
+Import table from CSV file:
+
+```sql
+CREATE TABLE airlines2 (carrier text, name text);
+```
+
+```sql
+COPY airlines2 FROM '/tmp/airlines.csv' WITH (
+  FORMAT csv,
+  HEADER true,
+  DELIMITER ','
+);
+```
