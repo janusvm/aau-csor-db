@@ -1,0 +1,179 @@
+---
+title: "CSOR-DB: Self Study Exercise"
+author: "Janus Valberg-Madsen"
+output:
+  html_notebook:
+    theme: cosmo
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    md_extensions: +definition_lists
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  error = FALSE,
+  message = FALSE
+)
+```
+
+# About this exercise
+
+An approved solution for this exercise set is a prerequisite for passing the course.
+To get approved, your submission must fulfil the following requirements in addition to having a satisfactory amount of correctly solved exercises:
+
+Format
+: R Notebook (a single, self-contained `.nb.html` file, described in Lecture 3)
+
+Submission method
+: Send an email with the subject "CSOR-DB handin" to [janus@math.aau.dk](mailto:janus@math.aau.dk) with your name and study no., and attach the `.nb.html` file (not the `.Rmd` file)
+
+Due date
+: Your submission must be submitted no later than 2019-03-29T08:00
+
+
+## Get started with the R Notebook
+
+Create a file called `handin.Rmd` and make sure it has the following fields in the YAML frontmatter:
+
+```yaml
+---
+title: "CSOR-DB Handin"
+author: <your name>
+output:
+  html_notebook:
+    toc: true
+---
+```
+
+If you're using RStudio , you can click **File → New File → R Notebook** to create one from a minimal template.
+Alternatively, you can use this notebook as a reference point - click the **Code** button in the top of the page and select **Download Rmd**.
+
+In the beginning of your notebook, create an R chunk that defines a connection to the `nycflights13` database:
+
+```{r setup-con}
+library(DBI)
+library(dplyr)
+
+con <- dbConnect(
+  drv      = RPostgreSQL::PostgreSQL(),
+  dbname   = "nycflights13",
+  user     = "csor",
+  password = "csor"
+)
+knitr::opts_chunk$set(connection = "con")
+```
+
+
+## Using R and SQL chunks
+
+In the exercises, you will be asked to show code -- some in R, some in SQL, some in both -- and sometimes results.
+To help you with this, here is a quick overview of how to use R and SQL code chunk headers in an R Notebook:
+
+
+  * To show syntax highlighted R code and run it, use the chunk header:
+
+    <pre><code>```{r}
+    </code></pre>
+
+  * To show  R code without running it, omit the curly braces:
+
+    <pre><code>```r
+    </code></pre>
+
+  * To show an SQL query and run it, use:
+
+    <pre><code>```{sql, connection = con}
+    </code></pre>
+
+  * To show an SQL query without running it, omit the curly braces:
+
+    <pre><code>```sql
+    </code></pre>
+
+**NB:** If you use RStudio, even if the chunk option `connection = con` is set globally, you still have to add it to each individual SQL chunk for it to work properly when evaluating the chunks interactively.
+Using the button **Insert → SQL** in the Source pane inserts a template with this option already typed in.
+
+
+## General hint
+
+Remember that for the `nycflights13` data, descriptions of all the variables are available in the help files (e.g. `?nycflights13::flights`).
+For some of the exercises, you will need to know the units of certain numerical variables.
+
+
+# Exercise 1
+
+For the exercises in this section, provide the answer as SQL queries together with their results.
+
+  1. Show the carrier code, tail number, and destination for the flights originating from JFK, and limit the output to 10 rows
+
+  2. Show all info for flights where the delay on arrivals were greater than 15 hours
+
+  3. Show the id code and name of all the airports with 'Island' in their name
+
+  4. Show the number of airports that do not have 'Island' in their name
+
+  5. Show the average temperature for each day of the year where the humidity was higher than 50 the whole day
+
+  6. Show the number of airports in the westmost time zone together with the associated time zone offset
+
+
+# Exercise 2
+
+For the exercises in this section, provide the answer both in R and SQL and show the results once.
+
+  1. Show the id code and name for each New York airport (i.e. the origins)
+
+  2. Show the id code, name, and number of flights for the 5 most popular destinations (i.e. with most flights)
+
+  3. For each of the origins, show the number of flights on the most humid day of the year in New York (defined as the day with the highest average humidity recorded across all three NY airports)
+
+  4. For each origin, show the number of flights departing during hours where pressure wasn't recorded at that airport
+
+  5. Show the number of flights flown by planes that either have no matching records in the `planes` table or whose manufacturer is 'EMBRAER'
+
+  6. Show the id code and name for the carrier with the highest average delay on arrival to the destination for which the flights have the longest average air time among the airports lying between 1000 and 2000 feet in altitude
+
+  7. Mad Maurice, a rich new yorker with too much free time, wishes to travel from EWR to JFK, two New York airports that are 21 miles apart, by flying from EWR to some outside destination and then from that destination to JFK.
+  Assume that all flights listed in the `flights` table represent a return flight that arrives and returns on the same day.
+  Assume furthermore that you can connect any flights with the same destination, as long as they're flown on the same day (effectively ignoring the `hour` and `minute` variables).
+  Show the shortest total distance for such a trip together with the month and day on which it would take place.
+
+
+# Exercise 3
+
+**NB:** This section involves creating a table and adding data to it.
+To avoid duplicate data and errors, do _not_ execute `CREATE`, `DROP`, or `INSERT` SQL code (or equivalent R code) in your notebook, but instead do it separately, once, in psql or pgAdmin.
+
+For exercises asking to show _data_, provide the answer both in R and SQL and show the results once.
+
+  1. Download the file [`pokemon.csv`](pokemon.csv); it is a table containing various information on the first six generations of Pokémon related to typing and stats.
+  Show the SQL `CREATE` script for creating a table called `pokemon` with appropriate column types
+
+  2. Show the code needed to populate the `pokemon` table with data from `pokemon.csv` in both R and SQL
+
+  3. How many Pokémon has a Fairy typing?
+
+  4. Pokémon with no secondary type are called _single type_ Pokémon. Show the most common single type together with the rarest single type
+
+  5. The queries for the previous two exercises can be sped up using indexes. Show the SQL `CREATE` script for such indexes
+
+  6. Show the code needed to add the following rows to `pokemon`:
+
+    Number | Name | Type 1 | Type 2 | Total | HP | Attack | Defense | Sp. Attack | Sp. Defense | Speed | Generation | Legendary
+    --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+    722 | Rowlet | Grass | Flying | 320 | 68 | 55 | 55 | 50 | 50 | 42 | 7 | false
+    723 | Dartrix | Grass | Flying | 420 | 78 | 75 | 75 | 70 | 70 | 52 | 7 | false
+    724 | Decidueye | Grass | Ghost | 530 | 78 | 107 | 75 | 100 | 100 | 70 | 7 | false
+
+    in both R and SQL (do not run the code, neither in the notebook nor separately)
+
+  7. Show the code needed to delete the `pokemon` table in both R and SQL
+
+
+```{r cleanup, include = FALSE}
+dbDisconnect(con)
+```

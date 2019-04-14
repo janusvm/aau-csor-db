@@ -12,4 +12,4 @@ Place
 
 ## Contents
 
-(under construction)
+See the [handin exercise](../exercises/self-study/handin.nb.html).
