@@ -73,6 +73,8 @@ knitr::opts_chunk$set(connection = "con")
 In the exercises, you will be asked to show code -- some in R, some in SQL, some in both -- and sometimes results.
 
   * **When asked to show R code**: show the `dplyr` pipeline used to produce the results in an R code chunk
+      (unless the exercise also involves other things than selecting data (i.e. writing or deleting), because then you also need `DBI` functions)
+
   * **When asked to show SQL code**: show the SQL query used to produce the results in an SQL code chunk
   * **When asked to show results**: evaluating an R or SQL code chunk that returns a table produces a paginated HTML table
   * **When asked for both R and SQL code as well as results**: show an R chunk with `dplyr` code, and an SQL chunk, and evaluate _one of them_ to show the table of results
@@ -158,6 +160,8 @@ For exercises asking to show _data_, provide the answer both in R and SQL and sh
 
   1. Download the file [`pokemon.csv`](pokemon.csv); it is a table containing various information on the first six generations of Pokémon related to typing and stats.
   Show the SQL `CREATE` script for creating a table called `pokemon` with appropriate column types
+
+    **NB:** Remember to either create the table with the `csor` user as the owner or to grant `SELECT` privileges to `csor` afterwards, or you won't be able to query on the table with the existing connection
 
   2. Show the code needed to populate the `pokemon` table with data from `pokemon.csv` in both R and SQL
 
