@@ -32,7 +32,7 @@ Submission method
 : Send an email with the subject "CSOR-DB handin" to [janus@math.aau.dk](mailto:janus@math.aau.dk) with your name and study no., and attach the `.nb.html` file (not the `.Rmd` file)
 
 Due date
-: Your submission must be submitted no later than 2019-03-29T08:00
+: Your submission must be submitted no later than 2019-04-29T08:00
 
 
 ## Get started with the R Notebook
