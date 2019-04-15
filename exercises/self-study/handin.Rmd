@@ -71,6 +71,12 @@ knitr::opts_chunk$set(connection = "con")
 ## Using R and SQL chunks
 
 In the exercises, you will be asked to show code -- some in R, some in SQL, some in both -- and sometimes results.
+
+  * **When asked to show R code**: show the `dplyr` pipeline used to produce the results in an R code chunk
+  * **When asked to show SQL code**: show the SQL query used to produce the results in an SQL code chunk
+  * **When asked to show results**: evaluating an R or SQL code chunk that returns a table produces a paginated HTML table
+  * **When asked for both R and SQL code as well as results**: show an R chunk with `dplyr` code, and an SQL chunk, and evaluate _one of them_ to show the table of results
+
 To help you with this, here is a quick overview of how to use R and SQL code chunk headers in an R Notebook:
 
 
