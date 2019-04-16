@@ -148,7 +148,10 @@ For the exercises in this section, provide the answer both in R and SQL and show
   7. Mad Maurice, a rich new yorker with too much free time, wishes to travel from EWR to JFK, two New York airports that are 21 miles apart, by flying from EWR to some outside destination and then from that destination to JFK.
   Assume that all flights listed in the `flights` table represent a return flight that arrives and returns on the same day.
   Assume furthermore that you can connect any flights with the same destination, as long as they're flown on the same day (effectively ignoring the `hour` and `minute` variables).
-  Show the shortest total distance for such a trip together with the month and day on which it would take place.
+
+    Suggest a travel date and route for Mad Maurice with the shortest possible distance;
+    that is, show the month, day, connecting destination, and total distance for _any_ such trip (the shortest trip can be flown on any of several days; show just one of these)
+
 
 
 # Exercise 3
